@@ -1,0 +1,625 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
+<?rfc toc="yes"?>
+<?rfc symrefs="yes"?>
+<?rfc sortrefs="yes"?>
+<?rfc compact="yes"?>
+<?rfc comments="yes"?>
+<?rfc inline="yes"?>
+<?rfc subcompact="no"?>
+<?rfc rfcedstyle="yes"?>
+<?rfc-ext allow-markup-in-artwork="yes" ?>
+<!DOCTYPE rfc [
+]>
+
+<rfc ipr="pre5378Trust200902"
+     docName="draft-ietf-sipcore-sip-token-authnz-02"
+     category="std"
+     xml:lang="en"
+     updates="3261">
+
+
+
+<!-- ********************************** FRONT ********************************** -->
+<front>
+
+  <title abbrev="3rd-Party Token-based AuthNZ for SIP">
+         Third-Party Token-based Authentication and Authorization 
+         for Session Initiation Protocol (SIP)
+  </title>
+
+  <author initials="R." surname="Shekh-Yusef" fullname="Rifaat Shekh-Yusef" role="editor">
+    <organization>Avaya</organization>
+    <address>
+      <postal>
+        <street>425 Legget Drive</street>
+        <city>Ottawa</city>
+        <region>Ontario</region>
+        <country>Canada</country>
+      </postal>
+      <phone>+1-613-595-9106</phone>
+      <email>rifaat.ietf@gmail.com</email>
+    </address>
+  </author>
+
+  <author initials="C." surname="Holmberg" fullname="Christer Holmberg">
+    <organization>Ericsson</organization>
+    <address>
+      <postal>
+        <street>Hirsalantie 11</street>
+        <city>Jorvas  02420</city>
+        <region></region>
+        <country>Finland</country>
+      </postal>
+      <email>christer.holmberg@ericsson.com</email>
+    </address>
+  </author>
+
+  <author initials="V." surname="Pascual" fullname="Victor Pascual">
+    <organization>webrtchacks</organization>
+    <address>
+      <postal>
+        <street />
+        <region></region>
+        <country>Spain</country>
+      </postal>
+      <email>victor.pascual.avila@gmail.com</email>
+    </address>
+  </author>
+
+
+  <date year="2019" />
+  <area>RAI</area>
+  <workgroup>SIP Core</workgroup>
+  <keyword>SIP OAuth</keyword>
+  <keyword>3rd party authentication</keyword>
+  <keyword>Third party authentication</keyword>
+
+  <abstract><t>
+     This document defines a mechanism for SIP, that is based on the OAuth 2.0 
+     and OpenID Connect Core 1.0 specifications, to enable the delegation of the 
+     user authentication and SIP registration authorization to a dedicated 
+     third-party entity that is separate from the SIP network elements that 
+     provide the SIP service.
+  </t></abstract>
+
+</front>
+
+
+
+<!-- ********************************** MIDDLE ********************************** -->
+<middle>
+
+  <section title="Introduction" anchor="introduction">
+
+    <t>
+      The SIP protocol <xref target="RFC3261"/> uses the framework used by the HTTP
+      protocol for authenticating users, which is a simple challenge-
+      response authentication mechanism that allows a server to challenge a
+      client request and allows a client to provide authentication
+      information in response to that challenge.
+    </t>
+
+    <t>
+      OAuth 2.0 <xref target="RFC6749" /> defines a token based authorization
+      framework to allow clients to access resources on behalf of their user.
+    </t>
+
+    <t>
+      The OpenID Connect 1.0 <xref target="OPENID" /> specifications defines
+      a simple identity layer on top of the OAuth 2.0 protocol, which enables
+      clients to verify the identity of the user based on the authentication
+      performed by a dedicated authorization server, as well as to obtain basic 
+      profile information about the user.
+    </t>
+
+    <t>
+     This document defines an mechanism for SIP, that is based on the OAuth 2.0 
+     and OpenID Connect Core 1.0 specifications, to enable the delegation of the 
+     user authentication and SIP registration authorization to a dedicated 
+     third-party entity that is separate from the SIP network elements that 
+     provide the SIP service.
+    </t>
+
+    <t> <vspace blankLines="1" /> </t>
+    <section title="Terminology" anchor="terminology">
+      <t>
+      The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
+      "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be
+      interpreted as described in <xref target="RFC2119" />.
+      </t>
+      <t> <vspace blankLines="1" /> </t>
+    </section>
+
+
+    <section title="SIP User Agent Types" anchor="sip.user.agent.types">
+    <t>
+      <xref target="RFC6749"/> defines two types of clients, confidential
+      and public, that apply to the SIP User Agents.
+    </t>
+
+
+    <t>
+    <list style="symbols">
+      <t>Confidential User Agent: is a SIP UA that is capable of maintaining
+        the confidentiality of the user credentials and any tokens obtained
+        using these user credentials.
+      </t>
+
+      <t>Public User Agent: is a SIP UA that is incapable of maintainings the
+        confidentiality of the user credentials and any obtained tokens.
+      </t>
+    </list>
+    </t>
+
+    <t> <vspace blankLines="99" /> </t>
+    </section>  <!-- SIP User Agent Types -->
+
+  </section> <!-- Introduction -->
+
+
+  <section title="Authentication and Authorization flow" anchor="authnz.flow">
+
+    <t>
+      This flow is used by a Confidential UA with rich UI to authenticate to an
+      authorization server and to directly obtain tokens to be able to 
+      register and get service from the SIP network.
+    </t>
+
+    <t> <vspace blankLines="1" /> </t>
+
+    <section title="Overview" anchor="overview">
+    <t>
+      The following sections provide overview of the supported flows.
+    </t>
+
+    <t> <vspace blankLines="1" /> </t>
+    <section title="Configured AS" anchor="configured.as">
+
+    <t>
+      The following figure provides a high level view of flow of messages when 
+      the UA is aware of the AS ahead of time:
+    </t>
+
+
+<figure><artwork>
+<![CDATA[
+  UA                          Registrar                          AS
+---------------------------------------------------------------------
+  |                               |                               |
+[00] The UA prompts the user to provides his credentials          |
+  |                               |                               |
+  | [01] HTTP POST /token         |                               |
+  |-------------------------------------------------------------->|
+  |                               |                               |
+  |         [02] 200 OK {access_token, refresh_token, [id_token]} |
+  |<--------------------------------------------------------------|
+  |                               |                               |
+  |                               |                               |
+  | [03] REGISTER                 |                               |
+  |      Authorization: Bearer <access_token>                     |
+  |------------------------------>|                               |
+  |                               |                               |
+  |                               |    [04] HTTP POST /introspect |
+  |                               |           {access_token}      |
+  |                               |------------------------------>|
+  |                               |                               |
+  |                               |        [05] 200 OK {metadata} |
+  |                               |<------------------------------|
+  |                               |                               |
+  |                   [06] 200 OK |                               |
+  |<------------------------------|                               |
+  |                               |                               |
+]]>
+
+</artwork></figure>
+
+    <t> <vspace blankLines="99" /> </t>
+      <t>
+        In step [00], the UA collects the user's credentials with the AS.
+      </t>
+
+      <t>
+        In steps [01] and [02], the UA first contacts the Authorization Server to 
+        authenticate the user and obtain tokens to be used to get access to the 
+        SIP network. 
+      </t>
+      <t>
+        The tokens returned to the UA depend on the type of server: 
+        with an OAuth Authorization Server, the tokens provided are the access 
+        token and refresh token. With an OpenID Connect server, an additional
+        ID-Token is returned, which contains the SIP URI of the user.
+        The method used to authenticate the user and obtain these tokens is out 
+        of scope for this document.
+      </t>
+
+      <t>
+        In step [03], the UA starts the registration process with the SIP registrar 
+        by sending a REGISTER request with the access token it obtained previously.
+      </t>
+
+      <t>
+        The registrar validates the access token, and if the access token provided 
+        by the UA is an opaque token, then the registrar MAY perform an introspection, 
+        steps [04] and [05], to obtain more information about the token and its 
+        scope, as per <xref target="RFC7662"/>. Otherwise, after the registrar validates the token 
+        to make sure it was signed by a trusted entity, it inspects its claims 
+        and act upon it.
+      </t>
+
+      <t>
+        When the registrar is satisfied with the token, it then replies with the 200 OK
+        to complete the registration process.
+      </t>
+    
+      <t> <vspace blankLines="1" /> </t>
+    <t> <vspace blankLines="99" /> </t>
+    </section> <!-- Configured AS-->
+
+    <section title="Discovered AS" anchor="discovered.as">
+    <t>
+      The following figure provides a high level view of flow of messages when 
+      the UA discovers the AS to conatc from the registrar:
+    </t>
+
+
+<figure><artwork>
+<![CDATA[
+
+  UA                          Registrar                          AS
+---------------------------------------------------------------------
+  |                               |                               |
+  | [07] REGISTER                 |                               |
+  |------------------------------>|                               |
+  |                               |                               |
+  | [08] 401 Unauthorized         |                               |
+  |      WWW-Authenticate: Bearer "authz_server"="<authz_server>" |
+  |<------------------------------|                               |
+  |                               |                               |
+[09] The UA prompts the user to provides his credentials          |
+  |                               |                               |
+  | [10] HTTP POST /token         |                               |
+  |-------------------------------------------------------------->|
+  |                               |                               |
+  |         [11] 200 OK {access_token, refresh_token, [id_token]} |
+  |<--------------------------------------------------------------|
+  |                               |                               |
+  | [12] REGISTER                 |                               |
+  |      Authorization: Bearer <access_token>                     |
+  |------------------------------>|                               |
+  |                               |    [13] HTTP POST /introspect |
+  |                               |           {access_token}      |
+  |                               |------------------------------>|
+  |                               |                               |
+  |                               |        [14] 200 OK {metadata} |
+  |                               |<------------------------------|
+  |                               |                               |
+  |                   [15] 200 OK |                               |
+  |<------------------------------|                               |
+  |                               |                               |
+]]>
+</artwork></figure>
+
+      <t>
+        In step [07] the UA starts the registration process by sending a 
+        SIP REGISTER request to the registrar without any credentials. The 
+        REGISTER request includes an indication that the UA supports token-based
+        autentication in the form of sip.token media feature tag.
+        The registrar then challenges the UA, in step [08], by 
+        responding with 401 Unauthorized and includes the authorization server 
+        to contact to obtain a token.
+      </t>
+
+      <t>
+        In step [09], the UA collects the user's credentials with the AS.
+      </t>
+
+      <t>
+        In steps [10] and [11], the UA contacts the Authorization Server to 
+        authenticate the user and obtain tokens to be used to get access to the 
+        SIP network. 
+      </t>
+
+      <t>
+        The tokens returned to the UA depend on the type of server: 
+        with an OAuth Authorization Server, the tokens provided are the access 
+        token and refresh token. With an OpenID Connect server, an additional
+        ID-Token is returned, which contains the SIP URI of the user.
+        The method used to authenticate the user and obtain these tokens is out 
+        of scope for this document.
+      </t>
+
+      <t>
+        In step [12], the UA retries the registration process with the SIP registrar 
+        by sending a REGISTER request with the access token it obtained previously.
+      </t>
+
+      <t>
+        The registrar validates the access token, and if the access token provided 
+        by the UA is an opaque token, then then registrar MAY perform an introspection, 
+        steps [13] and [14], to obtain more information about the token and its 
+        scope, as per <xref target="RFC7662"/>. Otherwise, after the registrar validates the token 
+        to make sure it was signed by a trusted entity, it inspects its claims 
+        and act upon it.
+      </t>
+      
+    <t> <vspace blankLines="1" /> </t>
+    </section> <!-- Discovered AS-->
+    
+    
+    </section> <!-- Overview-->
+
+
+    <section title="Initial Registration" anchor="initial.registration">
+
+      <t>
+        If the UA has already obtained a token, then the UA starts the registration
+        process, step [03], by sending a REGISTER request, with the access token
+        in the Authorization header, to the registrar.
+      </t>
+      
+      <t>
+        If the UA does not have a token, then the UA starts the registration
+        process, step [07], by sending a REGISTER request without an 
+        Authorization header. The registrar MUST then challenge the UA by responding 
+        with 401 Unauthorized and include the WWW-Authenticate Response Header Field 
+        which includes the  server to contact to obtain a token, as specified in 
+        <xref target="www-authenticate.response.header"/>
+      </t>
+
+      <t>
+        The REGISTER request SHOULD include a sip.token media feature tag in the 
+        Contact header field of the request, unless it knows (e.g., by means of 
+        configuration) that the registrar supports the token authentication 
+        mechanism.
+      </t>
+      
+      <t>
+        The UA MUST include an Authorization header field with the Bearer scheme in the 
+        request to carry the access token, as specified in <xref target="RFC6750"/>.
+      </t>
+
+      <t>
+        When the registrar is satisfied with the token, it then replies with the 200 OK
+        to complete the registration process.
+      </t>
+
+      <t> <vspace blankLines="1" /> </t>
+
+    </section> <!-- Registration -->
+
+    <section title="Subsequent Registrations" anchor="subsequent.registrations">
+      <t>
+        All subsequent REGISTER requests from the UA MUST include a valid access token. 
+        The UA MUST obtain a new access token before the access token expiry period
+        to continue to get service from the system. The method used to obtain a new
+        fresh access tokens is out of scope for this document.
+      </t>
+
+      <t>
+        The REGISTER request SHOULD include a sip.token media feature tag in the 
+        Contact header field of the request, unless it knows (e.g., by means of 
+        configuration) that the registrar supports the token authentication 
+        mechanism.
+      </t>
+
+    <t> <vspace blankLines="1" /> </t>
+    </section> <!-- Subsequent Requests -->
+
+    <section title="Non-Registration Requests" anchor="non.registrations">
+    
+      <t>
+        The UA MUST NOT insert a token in a non-REGISTER request, unless the non-REGISTER 
+        request has been challenged, or the peer is considered a trusted entity.
+      </t>
+ 
+      <t>
+        If a non-REGISTER request from the UA is challenged with a WWW-Authenticate header 
+        field to provide credentials for the same realm specified in the challenge 
+        to the registration request, then the UA MUST include a valid access token in 
+        the request retry.
+        The UA MUST include an Authorization header field with the Bearer scheme in the 
+        request to carry the access token, as specified in <xref target="RFC6750"/>.
+      </t>
+
+      <t>
+      Challenges with WWW-Authenticate with different realm specified 
+      in the challenge to the registration request are out of scope for this document. Challenges with 
+      Proxy-Authenticate are out of scope for this document.
+      </t>
+
+    <t> <vspace blankLines="1" /> </t>
+    </section> <!-- Subsequent Requests -->
+  </section>
+
+
+<section title="WWW-Authenticate Response Header Field" anchor="www-authenticate.response.header">
+
+    <t>
+      This section describes the syntax of the WWW-Authenticate Response Header 
+      Field when used with the Bearer scheme to challenge the UA for credentials.
+      
+
+  <figure><artwork>
+  <![CDATA[
+    challenge  =/  ("Bearer" LWS bearer-cln *(COMMA bearer-cln))
+    bearer-cln = realm / scope / authz-server / error / 
+                 auth-param
+    authz-server = "authz_server" EQUAL authz-server-value
+    authz-server-value = quoted-string
+  ]]>
+  </artwork></figure>
+  </t>
+  
+  <t>
+  The realm and auth-param parameters are defined in <xref target="RFC3261"/>.
+  </t>
+  
+  <t>
+  As per <xref target="RFC3261"/>, the realm string alone defines the protection 
+  domain. <xref target="RFC3261"/> states that the realm string must be 
+  globally unique and recommends that the realm string contains a hostname or 
+  domain name. It also states that the realm string should be human-readable identifier
+  that can be rendered to the user.
+  </t>
+  <t>  
+  The scope and error parameters are defined in <xref target="RFC6749"/>.
+  </t>
+  
+  <t>
+  The scope parameter could be used by the registrar/proxy to indicate to the UAC 
+  the minimum scope that must be associated with the access token to be able to get 
+  service. As defined in <xref target="RFC6749"/>, the value of the scope parameter 
+  is expressed as a list of space-delimited, case-sensitive strings. The strings are 
+  defined by the authorization server. The values of the scope parameter is out of 
+  scope for this document.
+  </t>
+
+  <t>
+  The error parameter could be used by the registrar/proxy to indicate to the UAC 
+  the reason for the error, with possible values of "invalid_token" or "invalid_scope".
+  </t>
+ 
+  <t> <vspace blankLines="1" /> </t>
+  </section> <!-- WWW-Authenticate Response Header Field -->
+
+
+  <section title="'sip.token' Media Feature Tag" anchor="sip.token">
+  <t>
+    The sip.token media feature tag, when inserted in the Contact header field
+    of a SIP REGISTER request, conveys that the SIP UA associated with the tag
+    supports a token based authentication mechanism, where the user authentication
+    and SIP registration authorization is performed by a third party. The media 
+    feature tag has no values.
+  <figure><artwork>
+  <![CDATA[
+token-mt = "+sip.token"
+  ]]>
+  </artwork></figure>
+  </t>
+  <t> <vspace blankLines="1" /> </t>
+  
+  
+  
+  </section> <!-- SIP Media Feature Tag -->
+
+
+  <section title="Security Considerations" anchor="security.considerations">
+ 
+  <t>
+  The UAC MUST always make sure that it is communicating with the right registrar/proxy
+  using TLS and proper validation of the server certificate and the identifier in 
+  that certificate to protect the access token in transit.
+  </t>
+
+  <t>
+  If the token being used is a bearer token as specified in <xref target="RFC6750"/>,
+  then the security considration of that document apply.
+  </t>
+  
+  <t>
+  If the token being used is a JWT as specified in <xref target="RFC7519"/>,
+  then the security considration of that document apply.
+  </t>
+  
+  <t> <vspace blankLines="1" /> </t>  
+  </section> <!-- Security Considerations -->
+
+
+  <section title="IANA Considerations" anchor="iana.considerations">
+  
+  <section title="SIP Media Feaure Tag" anchor="sip.media.feature.tag">
+  
+  <section title="sip.token" anchor="iana.sip.token">
+  <t>
+   This section defines a new media feature tag that extends the "SIP
+   Media Feature Tag Registration Tree" subregistry <xref target="RFC3840"/> under the
+   "Media Feature Tags" registry (https://www.iana.org/assignments/
+   media-feature-tags).  
+  </t>
+  <figure><artwork>
+  <![CDATA[
+    Media feature tag name: sip.token
+    
+    Summary of the media feature indicated by this feature tag: This 
+        media feature tag, when inserted in the Contact header field
+        of a SIP REGISTER request, conveys that the SIP UA associated 
+        with the tag supports a token based authentication mechanism,
+        where the user authentication and SIP registration authorization 
+        is performed by a third party.
+
+     Values appropriate for use with this feature tag: none
+
+     Related standards or documents: RFC XXXX
+
+     Security considerations: This media feature tag does not introduce
+        new security considerations, as it simply indicates support for
+        a basic SIP feature. However, if an attacker manages to remove
+        the media feature tag from a SIP REGISTER request, the SIP UA
+        that inserted it might not be able to authenticate itself with
+        the SIP registrar to which the SIP request is addressed, as the
+        SIP registrar might not be aware that the SIP UA supports the 
+        feature associated with the media feature tag.
+
+     Contact: IESG (iesg@ietf.org)    
+  ]]>
+  </artwork></figure>
+  
+  <t> <vspace blankLines="1" /> </t>  
+  </section> <!-- IANA SIP Token -->
+  </section> <!-- IANA SIP Media Feaure Tag -->
+  </section> <!-- IANA Considerations -->
+
+
+  <section title="Acknowledgments" anchor="acknowledgments">
+  <t>
+   The authors would also like to thank Paul Kyzivat for his reviews and 
+   feedback on this document.
+  </t>
+  
+  <t>
+   The authors would also like to thank the following for their review and
+   feedback of the original document that was replaced with this document:
+  </t>
+  <t>
+   Andrew Allen, Martin Dolly, Keith Drage, Paul Kyzivat, Jon Peterson,
+   Michael Procter, Roy Radhika, Matt Ryan, Ivo Sedlacek, Roman Shpount,
+   Robert Sparks, Asveren Tolga, and Dale Worley.
+  </t>
+  
+  <t> <vspace blankLines="1" /> </t>
+  </section> <!-- Acknowledgments -->
+
+</middle>
+
+
+
+<!-- ********************************** BACK ********************************** -->
+<back>
+  <references title="Normative References">
+   <?rfc include="reference.RFC.2119.xml"?>
+   <?rfc include="reference.RFC.3261.xml"?>
+   <?rfc include="reference.RFC.6749.xml"?>
+    <reference anchor="OPENID">
+      <front>
+        <title abbrev="OpenID">OpenID Connect Core 1.0</title>
+        <author initials="N." surname="Sakimura" fullname="Nat Sakimura" />
+        <author initials="J." surname="Bradley" fullname="John Bradley" />
+        <author initials="M." surname="Jones" fullname="Michael Jones" />
+        <author initials="B." surname="de Medeiros" fullname="Breno de Medeiros" />
+        <author initials="C." surname="Mortimore" fullname="Chuck Mortimore" />
+        <date month="February" year="2014" />
+      </front>
+    </reference>
+   <?rfc include="reference.RFC.7662.xml"?>
+   <?rfc include="reference.RFC.7231.xml"?>
+   <?rfc include="reference.RFC.7519.xml"?>
+   <?rfc include="reference.RFC.7523.xml"?>
+   <?rfc include="reference.RFC.3840.xml"?>
+   <?rfc include="reference.RFC.6750.xml"?>
+   
+  </references>
+</back>
+
+
+</rfc>
