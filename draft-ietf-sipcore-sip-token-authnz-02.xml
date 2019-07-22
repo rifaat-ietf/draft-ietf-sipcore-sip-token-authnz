@@ -350,88 +350,106 @@
     </section> <!-- Overview-->
 
 
-    <section title="Initial Registration" anchor="initial.registration">
-
+    <section title="SIP Procedures" anchor="sec.sip">
       <t>
-        If the UA has already obtained a token, then the UA starts the registration
-        process, step [03], by sending a REGISTER request, with the access token
-        in the Authorization header, to the registrar.
+        Section 22 of <xref target="RFC3261"/> defines the SIP procedures for the Digest authentication 
+        mechanism procedures. The same procedures apply to the Bearer authentication mechanism, with the
+        changes described in this section.
       </t>
-      
-      <t>
-        If the UA does not have a token, then the UA starts the registration
-        process, step [07], by sending a REGISTER request without an 
-        Authorization header. The registrar MUST then challenge the UA by responding 
-        with 401 Unauthorized and include the WWW-Authenticate Response Header Field 
-        which includes the  server to contact to obtain a token, as specified in 
-        <xref target="www-authenticate.response.header"/>
-      </t>
-
-      <t>
-        The REGISTER request SHOULD include a sip.token media feature tag in the 
-        Contact header field of the request, unless it knows (e.g., by means of 
-        configuration) that the registrar supports the token authentication 
-        mechanism.
-      </t>
-      
-      <t>
-        The UA MUST include an Authorization header field with the Bearer scheme in the 
-        request to carry the access token, as specified in <xref target="RFC6750"/>.
-      </t>
-
-      <t>
-        When the registrar is satisfied with the token, it then replies with the 200 OK
-        to complete the registration process.
-      </t>
-
-      <t> <vspace blankLines="1" /> </t>
-
-    </section> <!-- Registration -->
-
-    <section title="Subsequent Registrations" anchor="subsequent.registrations">
-      <t>
-        All subsequent REGISTER requests from the UA MUST include a valid access token. 
-        The UA MUST obtain a new access token before the access token expiry period
-        to continue to get service from the system. The method used to obtain a new
-        fresh access tokens is out of scope for this document.
-      </t>
-
-      <t>
-        The REGISTER request SHOULD include a sip.token media feature tag in the 
-        Contact header field of the request, unless it knows (e.g., by means of 
-        configuration) that the registrar supports the token authentication 
-        mechanism.
-      </t>
-
-    <t> <vspace blankLines="1" /> </t>
-    </section> <!-- Subsequent Requests -->
-
-    <section title="Non-Registration Requests" anchor="non.registrations">
-    
-      <t>
-        The UA MUST NOT insert a token in a non-REGISTER request, unless the non-REGISTER 
-        request has been challenged, or the peer is considered a trusted entity.
-      </t>
- 
-      <t>
-        If a non-REGISTER request from the UA is challenged with a WWW-Authenticate header 
-        field to provide credentials for the same realm specified in the challenge 
-        to the registration request, then the UA MUST include a valid access token in 
-        the request retry.
-        The UA MUST include an Authorization header field with the Bearer scheme in the 
-        request to carry the access token, as specified in <xref target="RFC6750"/>.
-      </t>
-
-      <t>
-      Challenges with WWW-Authenticate with different realm specified 
-      in the challenge to the registration request are out of scope for this document. Challenges with 
-      Proxy-Authenticate are out of scope for this document.
-      </t>
-
-    <t> <vspace blankLines="1" /> </t>
-    </section> <!-- Subsequent Requests -->
-  </section>
-
+      <section title="UAC Behavior" anchor="sec.sip.uac">
+        <section title="Obtaining the Access Token" anchor="sec.sip.uac.obtain">
+          <t>
+            When a UAC sends a request without credentials (or with credentials that are no longer valid),
+            and receives a 401 (Unauthorized) or a 407 (Proxy Authentication Required) response that contains
+            a WWW-Authenticate header field (in case of a 401 response) or a Proxy-Authenticate header field
+            (in case of a 407 response) that indicates “Bearer” scheme authentication and contains an address
+            to an Authorization Server, the UAC contacts the Authorization Server in order to obtain an
+            access token (and a refresh token), using the procedures defined in (ref-to-Oauth).
+          </t>
+          <t>
+            NOTE: The address of the Authorization Server might be known to the UAC e.g., using means of configuration,
+            in which case the UAC can contact the Authorization Server in order to obtain the access token before it
+            sends SIP request without credentials.
+          </t>
+        </section>
+        <section title="Protecting the Access Token" anchor="sec.sip.uac.protect">
+          <t>
+            <xref target="RFC6749"/> mandates that Access Tokens are protected with TLS. However, TLS only guarantees
+            hop-to-hop protection when used to protect SIP signaling. Therefore the Access Token MUST be protected in
+            a way so that only authorized SIP endpoints will have access to it. Endpoints that support this specifications
+            MUST support encrypted JSON Web Tokens (JWT) <xref target="RFC7519"/> for encoding and protecting Access Token when
+            included in SIP requests, unless some other mechanism is used to guarantee that only authorized SIP endpoints
+            have access to the Access Token.
+          </t>
+        </section>
+        <section title="REGISTER Request" anchor="sec.sip.uac.req.reg">
+          <t>
+            When a UAC sends a REGISTER request in order to create a binding, it MUST include an Authorization headerf ield
+            with a Bearer scheme, carrying the access token, in the request, as specified in <xref target="RFC6749"/>.
+            Based on local policy, the UAC MAY include an access token that has been used for another binding associated with
+            the same AOR in the request.
+          </t>
+          <t>
+            When the UAC sends a binding refresh REGISTER request, it SHOULD include an Authorization header field with either
+            the access token previously used for the binding, or a new access token (obtained using the refresh token) if the
+            previous one has expired.
+          </t>
+          <t>
+            If the access token included in a REGISTER request is not accepted, and the UAC receives a 401 response or a 407 response,
+            the UAC follows the procedures in <xref target="sec.sip.uac.obtain"/>.
+          </t>
+        </section>
+        <section title="Non-REGISTER Request" anchor="sec.sip.uac.req.nonreg">
+          <t>
+            When a UAC sends a request in order to initiate a SIP dialog, or sends a stand-alone request, the UAC MUST include
+            an Authorization header field with a Bearer scheme, carrying the access token, in the request, as specified
+            in <xref target="RFC6750"/>. Based on local policy, the UAC MAY include an access token that has been used for
+            another dialog, or for another stand-alone request, if the target of the new request is the same.
+          </t>
+          <t>
+            When the UAC sends a mid-dialog request, the UAC SHOULD include an Authorization header field with either the
+            access token previously used within the dialog, or with a new access token if the previous one has expired.
+          </t>
+          <t>
+            If the access token included in a request is not accepted, and the UAC receives a 401 response or a 407 response,
+            the UAC follows the procedures in <xref target="sec.sip.uac.obtain"/>.
+          </t>
+        </section>
+      </section> <!-- UAC Behavior -->
+      <section title="UAS and Registrar Behavior" anchor="sec.sip.uas">
+        <t>
+          When a UAS or a Registrar receives a SIP request that does not contain an Authorization
+          header field with a valid access token, and the UAS/Proxy decides to challenge the originator
+          of the request, the proxy MUST request the request and send a 401 (Unauthorized) response.
+          The UAS/Proxy MUST include a Proxy-Authentication header field in the response, indicate “Bearer”
+          scheme and include an address to an Authorization Server from there the originator can obtain an
+          access token.
+        </t>
+        <t>
+          When a UAS/Registrar receives a SIP request that contains an Authorization header field with an
+          access token, the UAS/Registrar MUST verify the access token, using the procedures in <xref target="RFC6750"/>.
+          If the verification is successful the UAS/Registrar can continue to process the request using normal
+          SIP procedures. If the verification fails, the UAS/Registrar MUST reject the request.
+        </t>
+      </section> <!-- UAS and Registrar Behavior -->
+      <section title="Proxy Behavior" anchor="sec.sip.proxy">
+        <t>
+          When a proxy receives a SIP request that does not contain a Proxy-Authorization header field
+          with a valid access token, and the proxy decides to challenge the originator of the request,
+          the proxy MUST request the request and send a 407 (Proxy Authentication Required) response.
+          The proxy MUST include a Proxy-Authentication header field in the response, indicate “Bearer”
+          scheme and include an address to an Authorization Server from there the originator can obtain an
+          access token.
+        </t>
+        <t>
+          When a proxy receives a SIP request that contains an Proxy-Authorization header field with an
+          access token, and the proxy has previously challenged the originator of the request, the proxy MUST
+          verify the access token, using the procedures in <xref target="RFC6750"/>. If the verification is successful
+          the proxy can continue to process the request using normal SIP procedure. If the verification fails,
+          the UAS/Registrar MUST reject the request.
+        </t>
+      </section> <!-- Proxy Behavior -->
+    </section> <!-- SIP Procedures -->
 
 <section title="WWW-Authenticate Response Header Field" anchor="www-authenticate.response.header">
 
