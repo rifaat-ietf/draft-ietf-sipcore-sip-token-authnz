@@ -505,24 +505,22 @@ token-mt = "+sip.token"
 
 
   <section title="Security Considerations" anchor="security.considerations">
- 
-  <t>
-  The UAC MUST always make sure that it is communicating with the right registrar/proxy
-  using TLS and proper validation of the server certificate and the identifier in 
-  that certificate to protect the access token in transit.
-  </t>
-
-  <t>
-  If the token being used is a bearer token as specified in <xref target="RFC6750"/>,
-  then the security considration of that document apply.
-  </t>
-  
-  <t>
-  If the token being used is a JWT as specified in <xref target="RFC7519"/>,
-  then the security considration of that document apply.
-  </t>
-  
-  <t> <vspace blankLines="1" /> </t>  
+    <t>
+      The security considerations for OAuth are defined in <xref target="RFC6749"/>.
+      The security considerations for bearer tokens are defined in <xref target="RFC6750"/>.
+      The security considerations for  JSON Web Tokens (JWT) are defined in <xref target="RFC7519"/>.
+      These security considerations also apply to SIP usage of access token as defined in this
+      document.
+    </t>
+    <t>
+      <xref target="RFC6749"/> mandates that Access Tokens are protected with TLS. However, TLS only guarantees
+      hop-to-hop protection when used to protect SIP signaling. Therefore the Access Token MUST be protected in
+      a way so that only authorized SIP endpoints will have access to it. Endpoints that support this specifications
+      MUST support encrypted JSON Web Tokens (JWT) <xref target="RFC7519"/> for encoding and protecting Access Token when
+      included in SIP requests, unless some other mechanism is used to guarantee that only authorized SIP endpoints
+      have access to the Access Token.
+    </t>
+    <t> <vspace blankLines="1" /> </t>  
   </section> <!-- Security Considerations -->
 
 
