@@ -485,24 +485,185 @@
 
 
   <section title="'sip.token' Media Feature Tag" anchor="sip.token">
-  <t>
-    The sip.token media feature tag, when inserted in the Contact header field
-    of a SIP REGISTER request, conveys that the SIP UA associated with the tag
-    supports a token based authentication mechanism, where the user authentication
-    and SIP registration authorization is performed by a third party. The media 
-    feature tag has no values.
-  <figure><artwork>
-  <![CDATA[
+    <t>
+      The sip.token media feature tag, when inserted in the Contact header field
+      of a SIP REGISTER request, conveys that the SIP UA associated with the tag
+      supports a token based authentication mechanism, where the user authentication
+      and SIP registration authorization is performed by a third party. The media 
+      feature tag has no values.
+      <figure><artwork>
+<![CDATA[
 token-mt = "+sip.token"
   ]]>
-  </artwork></figure>
-  </t>
-  <t> <vspace blankLines="1" /> </t>
-  
-  
-  
+      </artwork></figure>
+    </t>
+    <t> <vspace blankLines="1" /> </t>
   </section> <!-- SIP Media Feature Tag -->
+  
+  <section title="Example Flows" anchor="sec.authnz.flow">YYY
+    <section title="Registration" anchor="sec.reg.discovered.as">
+      <t>
+        The figure belows show an example of a SIP registration, where
+        the UA is informed about the Authorization Server (AS) from where
+        to obtain an access token by the registratar in a 401 response
+        to the REGISTER request.
+      </t>
+      <figure><artwork>
+<![CDATA[
 
+  UA                          Registrar                          AS
+---------------------------------------------------------------------
+  |                               |                               |
+  | [1] REGISTER                  |                               |
+  |------------------------------>|                               |
+  |                               |                               |
+  | [2] 401 Unauthorized          |                               |
+  |     WWW-Authenticate: Bearer "authz_server"="<authz_server>"  |
+  |<------------------------------|                               |
+  |                               |                               |
+  | [3] The UA colects the user AS credentials                    |
+  |                               |                               |
+  | [4] HTTP POST /token          |                               |
+  |-------------------------------------------------------------->|
+  |                               |                               |
+  | [5] 200 OK {access_token, refresh_token, [id_token]}          |
+  |<--------------------------------------------------------------|
+  |                               |                               |
+  | [6] REGISTER                  |                               |
+  |     Authorization: Bearer <access_token>                      |
+  |------------------------------>|                               |
+  |                               | [7] HTTP POST /introspect     |
+  |                               |     {access_token}            |
+  |                               |------------------------------>|
+  |                               |                               |
+  |                               | [8] 200 OK {metadata}         |
+  |                               |<------------------------------|
+  |                               |                               |
+  | [9] 200 OK                    |                               |
+  |<------------------------------|                               |
+  |                               |                               |
+]]>
+      </artwork></figure>
+      <t> 
+        In step [1], the UA starts the registration process by sending a 
+        SIP REGISTER request to the registrar without any credentials. The 
+        REGISTER request includes an indication that the UA supports token-based
+        autentication, using a sip.token media feature tag.
+      </t>
+      <t>
+        In step [2], the registrar challenges the UA, by sending a SIP 
+        401 (Unauthorized) response to the REGISTER request. In the response
+        the registrar includes information about the AS to contact in order
+        to obtain a token.
+      </t>
+      <t>
+        In step [3], the UA collects the user credentials associated with the AS.
+      </t>
+      <t>
+        In steps [4] and [5], the UA contacts the AS in order to 
+        authenticate the user and to obtain tokens to be used to get access to the 
+        SIP network. 
+      </t>
+      <t>
+        The tokens returned to the UA depend on the type of server: 
+        with an OAuth AS, the tokens provided are the access 
+        token and refresh token. With an OpenID Connect server, an additional
+        ID-Token is returned, which contains the SIP URI of the user.
+        The method used to authenticate the user and obtain these tokens is out 
+        of scope for this document.
+      </t>
+      <t>
+        In step [6], the UA retries the registration process by sending a new
+        SIP REGISTER request that includes the access token that the UA 
+        obtrained in steps [10] and [11].
+      </t>
+      <t>
+        The registrar validates the access token. If the access token is an 
+        opaque token, the registrar MAY perform an introspection,
+        showin in steps [7] and [8], in order to obtain more information
+        about the access token and its scope, as per <xref target="RFC7662"/>. 
+        Otherwise, after the registrar validates the token to make sure it was
+        signed by a trusted entity, it inspects its claims and act upon it.
+      </t>
+      <t>
+        In step [9], once the registrar has succesfully verified and accepted the 
+        access token, it sends a 200 (OK) response to the REGISTER request.
+      </t>
+      <t> <vspace blankLines="1" /> </t>
+    </section> <!-- Registration-->
+
+    <section title="Registration with Pre-Configured AS" anchor="sec.reg.preconfigured.as">
+      <t>
+        The figure belows show an example of a SIP registration, where
+        the UA is has pre-configured information about the Authorization Server (AS)
+        from where to obtain the access token.
+      </t>
+      <figure><artwork>
+<![CDATA[
+  UA                          Registrar                          AS
+---------------------------------------------------------------------
+  |                               |                               |
+  | [1] The UA collects the user AS credentials                   |
+  |                               |                               |
+  | [2] HTTP POST /token          |                               |
+  |-------------------------------------------------------------->|
+  |                               |                               |
+  | [3] 200 OK {access_token, refresh_token, [id_token]}          |
+  |<--------------------------------------------------------------|
+  |                               |                               |
+  |                               |                               |
+  | [4] REGISTER                  |                               |
+  |     Authorization: Bearer <access_token>                      |
+  |------------------------------>|                               |
+  |                               | [5] HTTP POST /introspect     |
+  |                               |     {access_token}            |
+  |                               |------------------------------>|
+  |                               |                               |
+  |                               | [6] 200 OK {metadata}         |
+  |                               |<------------------------------|
+  |                               |                               |
+  | [7] 200 OK                    |                               |
+  |<------------------------------|                               |
+  |                               |                               |
+]]>
+      </artwork></figure>
+      <t>
+        In step [1], the UA collects the user credentials associated with the AS.
+      </t>
+      <t>
+        In steps [2] and [3], the UA contacts the AS in order to 
+        authenticate the user and to obtain tokens to be used to get access to the 
+        SIP network. 
+      </t>
+      <t>
+        The tokens returned to the UA depend on the type of server: 
+        with an OAuth AS, the tokens provided are the access 
+        token and refresh token. With an OpenID Connect server, an additional
+        ID-Token is returned, which contains the SIP URI of the user.
+        The method used to authenticate the user and obtain these tokens is out 
+        of scope for this document.
+      </t>
+      <t>
+        In step [4], the UA retries the registration process by sending a new
+        SIP REGISTER request that includes the access token that the UA 
+        obtrained in steps [10] and [11].
+      </t>
+      <t>
+        The registrar validates the access token. If the access token is an 
+        opaque token, the registrar MAY perform an introspection,
+        showin in steps [5] and [6], in order to obtain more information
+        about the access token and its scope, as per <xref target="RFC7662"/>. 
+        Otherwise, after the registrar validates the token to make sure it was
+        signed by a trusted entity, it inspects its claims and act upon it.
+      </t>
+      <t>
+        In step [7], once the registrar has succesfully verified and accepted the 
+        access token, it sends a 200 (OK) response to the REGISTER request.
+      </t>
+      <t> <vspace blankLines="1" /> </t>
+      <t> <vspace blankLines="99" /> </t>
+    </section> <!-- Registration with Pre-Configured AS-->  
+  </section> <!-- Example Flows-->
 
   <section title="Security Considerations" anchor="security.considerations">
  
