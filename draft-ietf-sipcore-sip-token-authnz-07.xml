@@ -82,7 +82,7 @@
       profile information about the user.
       </t>
       <t>
-      This document updates [RFC3261], by defining the UAC procedures if it 
+      This document updates <xref target="RFC3261"/>, by defining the UAC procedures if it 
       receives a 401/407 response with multiple WWW-Authenticate/Proxy-Authenticate 
       header fields, providing challenges using different authentication schemes 
       for the same realm.
@@ -166,9 +166,9 @@
           </t>
           <t>
             The detailed OAuth2 procedure to authenticate the user and obtain
-            these tokens is out of scope of this document. [RFC8252] defines
+            these tokens is out of scope of this document. <xref target="RFC8252"/> defines
             procedures for native applications. When using the mechanism defined
-            in [RFC8252] the user will be directed to use a browser for the interaction
+            in <xref target="RFC8252"/> the user will be directed to use a browser for the interaction
             with the authorization server, allowing the authorization server
             to prompt the user for multi-factor authentication, redirect the user to
             third-party identity providers, and the use of single-sign-on sessions.
@@ -213,7 +213,7 @@
         containing the Bearer scheme, then to resolve that particular challenge
         it needs to send a request with an Authorization header field containing
         the response to that challenge, including the Bearer scheme carrying a valid 
-        access token in the request, as specified in [RFC6750].
+        access token in the request, as specified in <xref target="RFC6750"/>.
           </t>
           <t>
         Note that if there were multiple challenges with different schemes then it maybe 
@@ -436,7 +436,7 @@
         </t>
         <t>
         In step [3], the UA interacts with the AS, potentially using the OAuth Native 
-        App mechanism defined in [RFC8252], authenticates the user and obtains the 
+        App mechanism defined in <xref target="RFC8252"/>, authenticates the user and obtains the 
         tokens needed to access the SIP service.
         </t>
         <t>
@@ -493,7 +493,7 @@
       ]]></artwork>
         <t>
         In step [1], the UA interacts with the AS, potentially using the OAuth Native 
-        App mechanism defined in [RFC8252], authenticates the user and obtains the 
+        App mechanism defined in <xref target="RFC8252"/>, authenticates the user and obtains the 
         tokens needed to access the SIP service.
         </t>
         <t>
@@ -513,7 +513,6 @@
         In step [5], once the registrar has succesfully verified and accepted the 
         access token, it sends a 200 (OK) response to the REGISTER request.
         </t>
-        <t>   </t>
       </section>
       <!-- Registration with Pre-Configured AS-->  
   </section>
@@ -596,7 +595,6 @@
       </reference>
       <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7662.xml"/>
       <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7519.xml"/>
-      <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.3840.xml"/>
       <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.6750.xml"/>
       <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8252.xml"/>
       <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7230.xml"/>
