@@ -327,11 +327,10 @@
       This section describes the syntax of the WWW-Authenticate Response Header 
       Field when used with the Bearer scheme to challenge the UA for credentials, 
       by extending the 'challnge' header field defined by <xref target="RFC3261"/>.
-      
-
       </t>
-      <artwork><![CDATA[
-  
+      <figure>
+        <name>Bearer Scheme Syntax</name>
+      <sourcecode type="abnf"><![CDATA[
     challenge  =/  ("Bearer" LWS bearer-cln *(COMMA bearer-cln))
     bearer-cln = realm / scope / authz-server / error / 
                  auth-param
@@ -342,8 +341,8 @@
     scope = <defined in RFC6749>
     error = <defined in RFC6749>
     https-URI = <defined in RFC7230>
-  
-  ]]></artwork>
+  ]]></sourcecode>
+        </figure>
       <t>
   The authz-server parameters contains the HTTPS URI, as defined in 
   <xref target="RFC7230"/>, of the authorization server. The UA can discover 
@@ -392,9 +391,9 @@
         to obtain an access token by the registratar in a 401 response
         to the REGISTER request.
         </t>
+        <figure>
+          <name>Example Registration Flow</name>
         <artwork><![CDATA[
-
-
   UA                          Registrar                          AS
 ---------------------------------------------------------------------
   |                               |                               |
@@ -422,8 +421,8 @@
   | [7] 200 OK                    |                               |
   |<------------------------------|                               |
   |                               |                               |
-
-      ]]></artwork>
+]]></artwork>
+        </figure>
         <t> 
         In step [1], the UA starts the registration process by sending a 
         SIP REGISTER request to the registrar without any credentials. 
@@ -467,8 +466,9 @@
         the UA has pre-configured information about the Authorization Server (AS)
         from where to obtain the access token.
         </t>
+      <figure>
+        <name>Example Registration Flow - Authorization Server Information Preconfigured</name>
         <artwork><![CDATA[
-
   UA                          Registrar                          AS
 ---------------------------------------------------------------------
   |                               |                               |
@@ -489,8 +489,8 @@
   | [5] 200 OK                    |                               |
   |<------------------------------|                               |
   |                               |                               |
-
-      ]]></artwork>
+]]></artwork>
+      </figure>
         <t>
         In step [1], the UA interacts with the AS, potentially using the OAuth Native 
         App mechanism defined in <xref target="RFC8252"/>, authenticates the user and obtains the 
