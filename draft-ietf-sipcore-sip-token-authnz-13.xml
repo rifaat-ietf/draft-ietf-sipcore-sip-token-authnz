@@ -606,6 +606,23 @@
       some other mechanism is used to guarantee that only authorized SIP endpoints
       have access to the access token.
       </t>
+      <t>
+      Single Sing-On enables the user to use one set of credentials to authenticate
+      once and gain access to multiple SIP and non-SIP services using access token(s).
+      Because of that, it is critical to make sure that extra security measures be
+      taken to guards these credentials.
+      </t>
+      <t>
+      Examples of such measures include long passphrase instead of a password, enabling
+      multi-factor factor authentication, and the use of embedded browser when possible,
+      as defined in <xref target="RFC8252"/>.
+      </t>
+      <t>
+      Although this is out of scope for this document, it is important to carefully
+      consider the claims provided in the tokens used to access these services to make
+      sure of the privacy of the user accessing these services. As mentioned above,
+      this document calls for encrypting JWT representing the access token.
+      </t>
       <t>   </t>
     </section>
     <!-- Security Considerations -->
