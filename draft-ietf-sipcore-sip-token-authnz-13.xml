@@ -607,21 +607,42 @@
       have access to the access token.
       </t>
       <t>
-      Single Sing-On enables the user to use one set of credentials to authenticate
-      once and gain access to multiple SIP and non-SIP services using access token(s).
-      Because of that, it is critical to make sure that extra security measures be
-      taken to guards these credentials.
+      Single Sign-On (SSO) enables the user to use one set of credentials to
+      authenticate once and gain access to multiple SIP and non-SIP services
+      using access token(s). If the SSO login is compromised, that single
+      point of compromise has a much broader effect than is the case without
+      SSO. Further, an attacker can often use a compromised account to set
+      up Single Sign-On for other services that the victim has not
+      established an account with, and sometimes can even switch a dedicated
+      account into Single-Sign-On mode, creating a still broader attack.
       </t>
       <t>
-      Examples of such measures include long passphrase instead of a password, enabling
-      multi-factor factor authentication, and the use of embedded browser when possible,
-      as defined in <xref target="RFC8252"/>.
+      Because of that, it is critical to make sure that extra security
+      measures be taken to safeguard credentials used for Single Sign-On.
+      Examples of such measures include long passphrase instead of a
+      password, enabling multi-factor factor authentication, and the use of
+      embedded browser when possible, as defined in <xref target="RFC8252"/>.
       </t>
       <t>
-      Although this is out of scope for this document, it is important to carefully
-      consider the claims provided in the tokens used to access these services to make
-      sure of the privacy of the user accessing these services. As mentioned above,
-      this document calls for encrypting JWT representing the access token.
+      Although this is out of scope for this document, it is important to
+      carefully consider the claims provided in the tokens used to access
+      these services to make sure of the privacy of the user accessing these
+      services. As mentioned above, this document calls for encrypting JWT
+      representing the access token.
+      </t>
+      <t>
+      It is important that both parties participating in SSO provide
+      mechanisms for users to sever the SSO relationship, so that it is
+      possible without undue difficulty to mitigate a compromise that has
+      already happened.
+      </t>
+      <t>
+      The operator of a Single-Sign-On authentication system has access to
+      private information about sites and services that their users log
+      into, and even, to some extent, about their usage patterns.  It's
+      important to call these out in privacy disclosures and policies, and
+      to make sure that users can be aware of the tradeoffs between
+      convenience and privacy when they choose to use SSO.
       </t>
       <t>   </t>
     </section>
