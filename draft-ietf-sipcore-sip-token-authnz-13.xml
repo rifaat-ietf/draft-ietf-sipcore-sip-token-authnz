@@ -114,9 +114,10 @@
       <section anchor="terminology">
         <name>Terminology</name>
         <t>
-      The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
-      "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be
-      interpreted as described in BCP 14 <xref target="RFC2119"/> <xref target="RFC8174"/>
+          The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL
+          NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED",
+          "MAY", and "OPTIONAL" in this document are to be interpreted as
+          described in BCP 14 <xref target="RFC2119"/> <xref target="RFC8174"/>
           when, and only when, they appear in all capitals, as shown here.
         </t>
         <t>   </t>
@@ -191,7 +192,7 @@
       
       <t>
       Access Tokens could be represented in one of the above two formats. Refresh Tokens 
-      usualy are represented in a reference format, as this token is consumed only the AS that 
+      usually are represented in a reference format, as this token is consumed only the AS that 
       issued the token. ID Token is defined as a structured token in the form of a JWT.
       </t>
       <t></t>
@@ -515,7 +516,7 @@
       <t>
     The type of services to which an access token grants access can be determined 
     using different methods. The methods used and the access provided by the token
-    is based on local policy agreed between the AS and the registrar.
+    are based on local policy agreed between the AS and the registrar.
       </t>
       <t>
     If an access token is encoded as a JWT, it might contain a list of claims 
@@ -524,7 +525,7 @@
     some other mechanism, or a combination of claims and some other mechanism.
     If an access token is a reference token, the REGISTRAR will grant access 
     based on some other mechanism. Examples of such other mechanisms are 
-    introspection <xref target="RFC7662"/>, user profile lookups, etc.
+    introspection <xref target="RFC7662"/> and user profile lookups.
       </t>
       <t>   </t>
     </section>
@@ -610,10 +611,6 @@
     <!-- Security Considerations -->
 
 
-  <section anchor="iana.considerations">
-      <name>IANA Considerations</name>
-    </section>
-    <!-- IANA Considerations -->
 
 
   <section anchor="acknowledgments">
