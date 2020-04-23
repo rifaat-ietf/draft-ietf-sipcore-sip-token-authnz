@@ -191,7 +191,7 @@
         </ul>
       
       <t>
-      Access Tokens could be represented in one of the above two formats. Refresh Tokens 
+      Access Tokens are represented in one of the above two formats. Refresh Tokens 
       usually are represented in a reference format, as this token is consumed only the AS that 
       issued the token. ID Token is defined as a structured token in the form of a JWT.
       </t>
@@ -402,7 +402,7 @@
           TLS when in transit. However, TLS only guarantees hop-to-hop protection 
           when used to protect SIP signaling. Therefore the access token MUST be 
           protected in a way so that only authorized SIP servers will have access 
-          to it. Endpoints that support this specification MUST support encrypted 
+          to it. Endpoints that support this specification MUST use encrypted 
           JSON Web Tokens (JWT) <xref target="RFC7519"/> for encoding and protecting 
           access tokens when they are included in SIP requests, unless some other mechanism 
           is used to guarantee that only authorized SIP endpoints have access to 
