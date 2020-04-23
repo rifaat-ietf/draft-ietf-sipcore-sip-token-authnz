@@ -183,7 +183,7 @@
       </t>
       <ul spacing="normal">
       <li>Structured Token: a token that consists of a structured object that 
-      contains the claims associated with the token, e.g. JWT as defined in <xref target="RFC7519"/>. 
+      contains the claims associated with the token, e.g. JSON Web Token (JWT) as defined in <xref target="RFC7519"/>. 
       </li>
       <li>Reference Token: a token that consists of a random string that is used 
       to obtain the details of the token and its associated claims, as defined in <xref target="RFC6749"/>.
