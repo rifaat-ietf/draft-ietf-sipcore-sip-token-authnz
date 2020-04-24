@@ -183,7 +183,7 @@
       </t>
       <ul spacing="normal">
       <li>Structured Token: a token that consists of a structured object that 
-      contains the claims associated with the token, e.g. JSON Web Token (JWT) as defined in <xref target="RFC7519"/>. 
+      contains the claims associated with the token, e.g., JSON Web Token (JWT) as defined in <xref target="RFC7519"/>. 
       </li>
       <li>Reference Token: a token that consists of a random string that is used 
       to obtain the details of the token and its associated claims, as defined in <xref target="RFC6749"/>.
@@ -261,12 +261,7 @@
         obtained in the step above.
         </t>
         <t>
-        The registrar validates the access token. If the access token is a
-        reference token, the registrar MAY perform an introspection <xref target="RFC7662"/>,
-        as in steps [5] and [6], in order to obtain more information
-        about the access token and its scope, per <xref target="RFC7662"/>. 
-        Otherwise, after the registrar validates the token to make sure it was
-        signed by a trusted entity, it inspects its claims and acts upon it.
+        In step [4] and [5], the registrar validates the access token.
         </t>
         <t>
         In step [7], once the registrar has successfully verified and accepted the 
@@ -319,12 +314,7 @@
         obtained in the step above.
         </t>
         <t>
-        The registrar validates the access token. If the access token is a
-        reference token, the registrar MAY perform an introspection,
-        as in steps [3] and [4], in order to obtain more information
-        about the access token and its scope, per <xref target="RFC7662"/>. 
-        Otherwise, after the registrar validates the token to make sure it was
-        signed by a trusted entity, it inspects its claims and acts upon it.
+        In step [3] and [4], the registrar validates the access token.
         </t>
         <t>
         In step [5], once the registrar has successfully verified and accepted the 
@@ -362,7 +352,7 @@
             The detailed OAuth2 procedure to authenticate the user and obtain
             these tokens is out of scope of this document. 
             The address of the authorization server might already be known to the UAC via configuration. 
-            In which case, the UAC can contact the authorization server for tokens 
+            In such cases, the UAC can contact the authorization server for tokens 
             before it sends a SIP request (<xref target="fig-config-ua"/>). 
             Procedures for native applications are defined in <xref target="RFC8252"/>.
              When using the mechanism defined
@@ -399,14 +389,15 @@
           <name>Protecting the Access Token</name>
           <t>
           <xref target="RFC6749"/> mandates that access tokens are protected with 
-          TLS when in transit. However, TLS only guarantees hop-to-hop protection 
+          TLS when in transit. However, SIP makes have use of intermediary SIP proxies, and TLS only guarantees hop-to-hop protection 
           when used to protect SIP signaling. Therefore the access token MUST be 
           protected in a way so that only authorized SIP servers will have access 
-          to it. Endpoints that support this specification MUST use encrypted 
+          to it. SIP endpoints that support this specification MUST use encrypted 
           JSON Web Tokens (JWT) <xref target="RFC7519"/> for encoding and protecting 
           access tokens when they are included in SIP requests, unless some other mechanism 
           is used to guarantee that only authorized SIP endpoints have access to 
-          the access token.
+          the access token. TLS can still be used for protecting traffic between
+          SIP endpoints and the AS.
           </t>
           <t>   </t>
         </section>
@@ -462,24 +453,24 @@
     <section anchor="sec.sip.uas">
         <name>UAS and Registrar Behavior</name>
         <t>
-        When a UAS or Registrar receives a request that fails to contain
-        authorization credentials acceptable to it, it SHOULD challenge the
-        request by sending a 401 (Unauthorized) response. To indicate that
-        it is willing to accept an access token as a credential, the
-        UAS/Registrar MUST include a Proxy-Authentication header field in the
-        response that indicates "Bearer" scheme and includes an address of an
+        When a UAS or registrar receives a request that fails to contain
+        authorization credentials acceptable to it, the UAS/registrar SHOULD challenge the
+        request by sending a 401 (Unauthorized) response. If the UAS/registrar
+        chooses to challenge the request, and is willing to accept an access token
+        as a credential, it MUST include a WWW-Authenticate header
+        field in the response that indicates "Bearer" scheme and includes an address of an
         authorization server from which the originator can obtain an access token.
         </t>
         <t>
-        When a UAS/Registrar receives a SIP request that contains an Authorization 
-        header field with an access token, the UAS/Registrar MUST validate the access 
+        When a UAS or registrar receives a SIP request that contains an Authorization 
+        header field with an access token, the UAS/registrar MUST validate the access 
         token, using the procedures associated with the type of access token (Structured 
-        or Reference) used, e.g. <xref target="RFC7519"/>.
-        If the token provided is an expired access token, then the UAS MUST reply with 
-        401 Unauthorized, as defined in section 3 of <xref target="RFC6750"/>.
-        If the validation is successful, the UAS/Registrar can continue to process 
-        the request using normal SIP procedures. If the validation fails, the UAS/Registrar 
-        MUST reject the request.
+        or Reference) used, e.g., <xref target="RFC7519"/>.
+        If the token provided is an expired access token, then the UAS/registrar MUST reply with 
+        a 401 (Unauthorized) response, as defined in section 3 of <xref target="RFC6750"/>.
+        If the validation is successful, the UAS/registrar can continue to process 
+        the request using normal SIP procedures. If the validation fails, the UAS/registrar 
+        MUST reply with 401 (Unauthorized) response.
         </t>
         <t>   </t>
       </section>
@@ -490,10 +481,10 @@
         When a proxy receives a request that fails to contain
         authorization credentials acceptable to it, it SHOULD challenge the
         request by sending a 407 (Proxy Authentication Required) response.
-        To indicate that it is willing to accept an access token as a
-        credential, the proxy MUST include a Proxy-Authentication
+        If the proxy chooses to challenge the request, and is willing to accept an access token
+        as a credential, it MUST include a Proxy-Authenticate
         header field in the response that indicates "Bearer" scheme and
-        includes an address to an authorization server from which the
+        includes an address of an authorization server from which the
         originator can obtain an access token.         
         </t>
         <t>
@@ -598,10 +589,10 @@
       </t>
       <t>
       <xref target="RFC6749"/> mandates that access tokens are protected with TLS. 
-      However, TLS only guarantees hop-to-hop protection when used to protect SIP 
+      However, SIP makes have use of intermediary SIP proxies, and TLS only guarantees hop-to-hop protection when used to protect SIP 
       signaling. Therefore the access token MUST be protected in a way so that 
       only authorized SIP endpoints will have access to it. Endpoints that support 
-      this specification MUST support encrypted JSON Web Tokens (JWT) <xref target="RFC7519"/> 
+      this specification MUST use encrypted JSON Web Tokens (JWT) <xref target="RFC7519"/> 
       for encoding and protecting access tokens when included in SIP requests, unless 
       some other mechanism is used to guarantee that only authorized SIP endpoints
       have access to the access token.
@@ -707,11 +698,14 @@
       <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7662.xml"/>
       <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7519.xml"/>
       <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.6750.xml"/>
-      <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8252.xml"/>
       <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7230.xml"/>
-      <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8414.xml"/>
       <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8174.xml"/>
       <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.5234.xml"/>
+    </references>
+        <references>
+      <name>Informative References</name>
+      <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8252.xml"/>
+      <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8414.xml"/>
     </references>
   </back>
 </rfc>
