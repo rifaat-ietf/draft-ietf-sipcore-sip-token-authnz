@@ -262,7 +262,7 @@
         </t>
         <t>
         The registrar validates the access token. In steps [5] and [6], the registrar
-        performs an introspection [RFC7662]. The procedure is optional, and might
+        performs an introspection [RFC7662]. The introspection procedure is optional, and might
         be performed by the registrar if the access token is a reference token.
         </t>
         <t>
@@ -317,7 +317,7 @@
         </t>
         <t>
         The registrar validates the access token. In steps [3] and [4], the registrar
-        performs an introspection [RFC7662]. The procedure is optional, and might
+        performs an introspection [RFC7662]. The introspection procedure is optional, and might
         be performed by the registrar if the access token is a reference token.
         </t>
         <t>
@@ -422,7 +422,7 @@
           <t>
           Typically, a UAC will obtain a new access token for each new binding, However, based on local policy,
           a UAC MAY include an access token that has been used for another binding associated with the same
-          Address Of Record (AOR) in the request."
+          Address Of Record (AOR) in the request.
           </t>
           <t>
         If the access token included in a REGISTER request is not accepted,
