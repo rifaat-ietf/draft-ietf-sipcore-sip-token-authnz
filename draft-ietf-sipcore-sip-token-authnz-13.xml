@@ -510,11 +510,11 @@
     are based on local policy agreed between the AS and the registrar.
       </t>
       <t>
-    If an access token is encoded as a JWT, it might contain a list of claims 
-    <xref target="RFC7519"/>, some registered and some application-specific. The 
-    REGISTRAR can grant access to services based on such claims,  
+    If an access token is encoded as a JWT, it will contain a list of claims 
+    <xref target="RFC7519"/>, including both registered and application-specific claimes. The 
+    registrar can grant access to services based on such claims,  
     some other mechanism, or a combination of claims and some other mechanism.
-    If an access token is a reference token, the REGISTRAR will grant access 
+    If an access token is a reference token, the registrar will grant access 
     based on some other mechanism. Examples of such other mechanisms are 
     introspection <xref target="RFC7662"/> and user profile lookups.
       </t>
