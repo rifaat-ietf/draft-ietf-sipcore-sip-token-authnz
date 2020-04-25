@@ -91,7 +91,7 @@
       <t>
       The OpenID Connect 1.0 specification <xref target="OPENID"/> defines
       a simple identity layer on top of the OAuth 2.0 protocol, which enables
-      clients to verify the identity of the user based on the authentication
+      OAuth/OpenID clients to verify the identity of the user based on the authentication
       performed by a dedicated authorization server, as well as to obtain basic 
       profile information about the user.
       </t>
@@ -173,7 +173,7 @@
       </t>
       <ul spacing="normal">
       <li>
-        ID Token: this token contains the SIP URI and other
+        ID Token: this token contains a SIP URI associated with the user and other
        user-specific details that will be consumed by the UAC.
       </li>
       </ul>
@@ -185,7 +185,7 @@
       <li>Structured Token: a token that consists of a structured object that 
       contains the claims associated with the token, e.g., JSON Web Token (JWT) as defined in <xref target="RFC7519"/>. 
       </li>
-      <li>Reference Token: a token that consists of a random string that is used 
+      <li>Reference Token: a token that consists of an opaque random string that is used 
       to obtain the details of the token and its associated claims, as defined in <xref target="RFC6749"/>.
       </li>
         </ul>
@@ -261,7 +261,9 @@
         obtained in the step above.
         </t>
         <t>
-        In step [4] and [5], the registrar validates the access token.
+        The registrar validates the access token. In steps [5] and [6], the registrar
+        performs an introspection [RFC7662]. The procedure is optional, and might
+        be performed by the registrar if the access token is a reference token.
         </t>
         <t>
         In step [7], once the registrar has successfully verified and accepted the 
@@ -314,7 +316,9 @@
         obtained in the step above.
         </t>
         <t>
-        In step [3] and [4], the registrar validates the access token.
+        The registrar validates the access token. In steps [3] and [4], the registrar
+        performs an introspection [RFC7662]. The procedure is optional, and might
+        be performed by the registrar if the access token is a reference token.
         </t>
         <t>
         In step [5], once the registrar has successfully verified and accepted the 
@@ -368,9 +372,8 @@
           SIP servers to authorize UAC's access to the service. The UAC uses the refresh token 
           only with the AS to get a new access token and refresh token before 
           the expiry of the current access token (see <xref target="RFC6749"/>, section 1.5 Refresh Token for details). 
-          An OpenID Connect server returns 
-          an additional ID-Token containing the SIP URI and other user-specific 
-          details that will be consumed by the UAC.
+          An OpenID Connect server returns an additional ID-Token containing a SIP URI associated with the user
+          and other user-specific details that will be consumed by the UAC.
           </t>
           <t>
         If the UAC receives a 401/407 response with multiple WWW-Authenticate/Proxy-Authenticate 
@@ -417,9 +420,9 @@
         able to successfully retry the request using non-Bearer credentials.
           </t>
           <t>
-        Based on local policy, the UAC MAY include an access token that has
-        been used for another binding associated with the same Address Of Record (AOR) in the
-        request.
+          Typically, a UAC will obtain a new access token for each new binding, However, based on local policy,
+          a UAC MAY include an access token that has been used for another binding associated with the same
+          Address Of Record (AOR) in the request."
           </t>
           <t>
         If the access token included in a REGISTER request is not accepted,
@@ -436,10 +439,11 @@
           </t>
           <t>
           When the UAC sends a request, it MUST include an Authorization header field 
-          with a Bearer scheme, carrying a valid access token in the request, as specified
-          in <xref target="RFC6750"/>. Based on local policy, the UAC MAY include 
-          an access token that has been used for another dialog, or for another 
-          stand-alone request, if the target of the new request is the same.
+          with a Bearer scheme, carrying a valid access token obtained from the AS indicated
+          in the challenge, in the request, as specified in <xref target="RFC6750"/>.
+          Based on local policy, the UAC MAY include an access token that has been used
+          for another dialog, or for another stand-alone request, if the target of the
+          new request is the same.
           </t>
           <t>
           If the access token included in a request is not accepted, and the UAC receives 
