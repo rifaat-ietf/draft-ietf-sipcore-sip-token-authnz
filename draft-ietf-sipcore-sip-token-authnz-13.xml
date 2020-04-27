@@ -667,8 +667,63 @@
     </section>
     <!-- Security Considerations -->
 
+  <section anchor="iana.considerations">
+      <name>IANA Considerations</name>
 
+      <section anchor="iana.considerations.proxy-authenticate.param">
+        <name>New Proxy-Authenticate header field parameters</name>
+        <t>
+        This section defines new SIP header field parameters in the "Header Field
+        Parameters and Parameter Values" subregistry of the "Session
+        Initiation Protocol (SIP) Parameters" registry
+        <https://www.iana.org/assignments/sip-parameters>
+        </t>
 
+        <figure align="center"><artwork>
+        <![CDATA[
+  Header Field:  Proxy-Authenticate
+
+  Parameter Name:  authz_server
+  Predefined Values:  No
+  Reference:  RFC XXXX
+
+  Parameter Name:  error
+  Predefined Values:  No
+  Reference:  RFC XXXX
+
+  Parameter Name:  scope
+  Predefined Values:  No
+  Reference:  RFC XXXX
+]]></artwork></figure>
+    </section>
+    <section anchor="iana.considerations.www-authenticate.param">
+        <name>New WWW-Authenticate header field parameters</name>
+        <t>
+        This section defines new SIP header field parameters in the "Header Field
+        Parameters and Parameter Values" subregistry of the "Session
+        Initiation Protocol (SIP) Parameters" registry
+        <https://www.iana.org/assignments/sip-parameters>
+        </t>
+
+        <figure align="center"><artwork>
+        <![CDATA[
+  Header Field:  WWW-Authenticate
+
+  Parameter Name:  authz_server
+  Predefined Values:  No
+  Reference:  RFC XXXX
+
+  Parameter Name:  error
+  Predefined Values:  No
+  Reference:  RFC XXXX
+
+  Parameter Name:  scope
+  Predefined Values:  No
+  Reference:  RFC XXXX
+]]></artwork></figure>
+    </section>
+  </section>
+  <!-- IANA Considerations -->
 
   <section anchor="acknowledgments">
       <name>Acknowledgments</name>
