@@ -185,7 +185,7 @@
       <li>Structured Token: a token that consists of a structured object that 
       contains the claims associated with the token, e.g., JSON Web Token (JWT) as defined in <xref target="RFC7519"/>. 
       </li>
-      <li>Reference Token: a token that consists of an opaque random string that is used 
+      <li>Reference Token: a token that consists of an opaque string that is used 
       to obtain the details of the token and its associated claims, as defined in <xref target="RFC6749"/>.
       </li>
         </ul>
@@ -263,9 +263,12 @@
         obtained in the step above.
         </t>
         <t>
-        The registrar validates the access token. In steps [5] and [6], the registrar
-        performs an introspection [RFC7662]. The introspection procedure is optional, and might
-        be performed by the registrar if the access token is a reference token.
+        The registrar validates the access token. If the access token is a
+        reference token, the registrar MAY perform an introspection
+        <xref target="RFC7662"/>, as in steps [5] and [6], in order to obtain more
+        information about the access token and its scope, per <xref target="RFC7662"/>.
+        Otherwise, after the registrar validates the token, it inspects its
+        claims and acts upon it.
         </t>
         <t>
         In step [7], once the registrar has successfully verified and accepted the 
@@ -320,9 +323,12 @@
         obtained in the step above.
         </t>
         <t>
-        The registrar validates the access token. In steps [3] and [4], the registrar
-        performs an introspection [RFC7662]. The introspection procedure is optional, and might
-        be performed by the registrar if the access token is a reference token.
+        The registrar validates the access token. If the access token is a
+        reference token, the registrar MAY perform an introspection
+        <xref target="RFC7662"/>, as in steps [4] and [5], in order to obtain more
+        information about the access token and its scope, per <xref target="RFC7662"/>.
+        Otherwise, after the registrar validates the token, it inspects its
+        claims and acts upon it.
         </t>
         <t>
         In step [5], once the registrar has successfully verified and accepted the 
@@ -396,11 +402,11 @@
           <name>Protecting the Access Token</name>
           <t>
           <xref target="RFC6749"/> mandates that access tokens are protected with 
-          TLS when in transit. However, SIP makes have use of intermediary SIP proxies, and TLS only guarantees hop-to-hop protection 
-          when used to protect SIP signaling. Therefore the access token MUST be 
-          protected in a way so that only authorized SIP servers will have access 
-          to it. SIP endpoints that support this specification MUST use encrypted 
-          JSON Web Tokens (JWT) <xref target="RFC7519"/> for encoding and protecting 
+          TLS when in transit. However, SIP makes have use of intermediary SIP proxies,
+          and TLS only guarantees hop-to-hop protection when used to protect SIP signaling.
+          Therefore the access token MUST be protected in a way so that only authorized SIP
+          servers will have access to it. SIP endpoints that support this specification MUST
+          use encrypted JSON Web Tokens (JWT) <xref target="RFC7519"/> for encoding and protecting 
           access tokens when they are included in SIP requests, unless some other mechanism 
           is used to guarantee that only authorized SIP endpoints have access to 
           the access token. TLS can still be used for protecting traffic between
@@ -466,7 +472,7 @@
         request by sending a 401 (Unauthorized) response. If the UAS/registrar
         chooses to challenge the request, and is willing to accept an access token
         as a credential, it MUST include a WWW-Authenticate header
-        field in the response that indicates "Bearer" scheme and includes an address of an
+        field in the response that indicates "Bearer" scheme and includes the DNS name of an
         authorization server from which the originator can obtain an access token.
         </t>
         <t>
@@ -596,14 +602,16 @@
       document.
       </t>
       <t>
-      <xref target="RFC6749"/> mandates that access tokens are protected with TLS. 
-      However, SIP makes have use of intermediary SIP proxies, and TLS only guarantees hop-to-hop protection when used to protect SIP 
-      signaling. Therefore the access token MUST be protected in a way so that 
-      only authorized SIP endpoints will have access to it. Endpoints that support 
-      this specification MUST use encrypted JSON Web Tokens (JWT) <xref target="RFC7519"/> 
-      for encoding and protecting access tokens when included in SIP requests, unless 
-      some other mechanism is used to guarantee that only authorized SIP endpoints
-      have access to the access token.
+      <xref target="RFC6749"/> mandates that access tokens are protected with 
+      TLS when in transit. However, SIP makes have use of intermediary SIP proxies,
+      and TLS only guarantees hop-to-hop protection when used to protect SIP signaling.
+      Therefore the access token MUST be protected in a way so that only authorized SIP
+      servers will have access to it. SIP endpoints that support this specification MUST
+      use encrypted JSON Web Tokens (JWT) <xref target="RFC7519"/> for encoding and protecting 
+      access tokens when they are included in SIP requests, unless some other mechanism 
+      is used to guarantee that only authorized SIP endpoints have access to 
+      the access token. TLS can still be used for protecting traffic between
+      SIP endpoints and the AS.
       </t>
       <t>
       Single Sign-On (SSO) enables the user to use one set of credentials to
