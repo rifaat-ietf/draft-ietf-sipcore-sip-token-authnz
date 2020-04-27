@@ -483,8 +483,9 @@
         request by sending a 401 (Unauthorized) response. If the UAS/registrar
         chooses to challenge the request, and is willing to accept an access token
         as a credential, it MUST include a WWW-Authenticate header
-        field in the response that indicates "Bearer" scheme and includes the DNS name of an
-        AS from which the originator can obtain an access token.
+        field in the response that indicates "Bearer" scheme and includes an AS address, 
+        encoded as an https URI <xref target="RFC7230"/>, from which the UAC can obtain
+        an access token.
         </t>
         <t>
         When a UAS or registrar receives a SIP request that contains an Authorization 
@@ -508,9 +509,9 @@
         request by sending a 407 (Proxy Authentication Required) response.
         If the proxy chooses to challenge the request, and is willing to accept an access token
         as a credential, it MUST include a Proxy-Authenticate
-        header field in the response that indicates "Bearer" scheme and
-        includes an address of an AS from which the
-        originator can obtain an access token.         
+        header field in the response that indicates "Bearer" scheme and includes an AS address, 
+        encoded as an https URI <xref target="RFC7230"/>, from which the UAC can obtain
+        an access token.
         </t>
         <t>
         When a proxy wishes to authenticate a received request, it MUST
