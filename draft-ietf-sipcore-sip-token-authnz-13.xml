@@ -361,6 +361,10 @@
           and contains an address to an authorization server, the UAC contacts the 
           authorization server in order to obtain tokens, and includes the requested 
           scopes, based on a local configuration (<xref target="fig-register-flow"/>). 
+          The UAC MUST check the authorization server URL received in the 401/407 response
+          against a list of trusted authorization servers configured on the UAC, in order
+          to prevent several classes of possible vulnerabilities when a client blindly
+          attempt to use any provided authorization.
           </t>
           <t>
           The detailed OAuth2 procedure to authenticate the user and obtain
