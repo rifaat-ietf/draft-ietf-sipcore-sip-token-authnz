@@ -380,14 +380,15 @@
           third-party identity providers, and to enable the use of single sign-on sessions.
           </t>
           <t>
-          The tokens returned to 
-          the UAC depend on the type of AS: an OAuth AS provides an 
-          access token and refresh token <xref target="RFC6749"/>. The UAC provides the access token to the
-          SIP servers to authorize UAC's access to the service. The UAC uses the refresh token 
-          only with the AS to get a new access token and refresh token before 
-          the expiry of the current access token (see <xref target="RFC6749"/>, section 1.5 Refresh Token for details). 
-          An OpenID Connect server returns an additional ID-Token containing a SIP URI associated with the user
-          and other user-specific details that will be consumed by the UAC.
+          The tokens returned to the UAC depend on the type of AS: an OAuth AS provides an 
+          access token and optionally a refresh token <xref target="RFC6749"/>. The refresh
+          token is only used between the UAC and the AS. If the AS provides a refresh token
+          to the UAC, the UAC uses it to to request a new access token and refresh token from
+          the AS before the currently used access token expires token (<xref target="RFC6749"/>, Section 1.5).
+          If the AS does not provide a refresh token, the UAC needs to re-authenticate the user,
+          in order to get a new access token, before the currently used access token expires.
+          An OpenID Connect server returns an additional ID-Token containing a SIP URI associated
+          with the user and other user-specific details that will be consumed by the UAC
           </t>
           <t>
           If the UAC receives a 401/407 response with multiple WWW-
