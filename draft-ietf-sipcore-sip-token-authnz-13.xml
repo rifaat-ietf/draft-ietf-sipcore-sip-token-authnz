@@ -80,8 +80,8 @@
       <t>
       The Session Initiation Protocol (SIP) <xref target="RFC3261"/> uses the same framework
       as HTTP <xref target="RFC7230"/> to authenticate users: a simple
-      challenge-response authentication mechanism that allows a SIP server to challenge a
-      SIP client request and allows a SIP client to provide authentication
+      challenge-response authentication mechanism that allows a SIP User Agent Server (UAS), proxy or
+      registrar to challenge a SIP User Agent Client (UAC) request and allows the UAC to provide authentication
       information in response to that challenge.
       </t>
       <t>
@@ -92,8 +92,8 @@
       The OpenID Connect 1.0 specification <xref target="OPENID"/> defines
       a simple identity layer on top of the OAuth 2.0 protocol, which enables
       OAuth/OpenID clients to verify the identity of the user based on the authentication
-      performed by a dedicated authorization server (AS), as well as to obtain basic 
-      profile information about the user.
+      performed by a dedicated authorization server (AS), referred to as
+      OpenID Provider (OP), as well as to obtain basic profile information about the user.
       </t>
       <t>
       This document defines the "Bearer" authentication scheme for the
@@ -105,7 +105,7 @@
       and non-SIP services.
       </t>
       <t>
-      This document also updates <xref target="RFC3261"/>, by defining the User Agent Client (UAC) procedures 
+      This document also updates <xref target="RFC3261"/>, by defining the UAC procedures 
       when a UAC receives a 401/407 response with multiple WWW-Authenticate/Proxy-Authenticate 
       header fields, providing challenges using different authentication schemes 
       for the same realm.
@@ -122,29 +122,16 @@
         </t>
         <t>   </t>
       </section>
-      <section anchor="sip.user.agent.types">
-        <name>SIP User Agent Types</name>
+      <section anchor="section.this">
+        <name>Applicability</name>
         <t>
-      The OAuth 2.0 authorization framework <xref target="RFC6749"/> defines two types of clients, confidential
-      and public, that apply to the SIP UACs.
-        </t>
-        <ul spacing="normal">
-      <li>Confidential User Agent: a SIP UAC that is capable of maintaining
-        the confidentiality of the user credentials and any tokens obtained
-        using these user credentials.
-      </li>
-          <li>Public User Agent: a SIP UAC that is incapable of maintaining the
-        confidentiality of the user credentials and any obtained tokens.
-      </li>
-        </ul>
-        <t>
-        The mechanism defined in this document MUST only be used with  
-        Confidential User Agents, as the UAC is expected to obtain and maintain tokens
-        to be able to access the SIP network.
+        This document covers cases where grants that allow the UAC to obtain an
+        access token from the AS are used. Cases where the UAC is not able to obtain
+        an access token (e.g., in the case of an authorization code grant) are not covered.
         </t>
         <t>   </t>
       </section>
-      <!-- SIP User Agent Types -->
+      <!-- Applicability -->
       
       <section anchor="tokens">
       <name>Token Types and Formats</name>
@@ -169,7 +156,7 @@
       </ul>
 
       <t>
-      An OpenID Connect server returns an additional token:
+      An OP returns an additional token:
       </t>
       <ul spacing="normal">
       <li>
@@ -211,7 +198,7 @@
         <figure anchor="fig-register-flow">
           <name>Example Registration Flow</name>
         <artwork><![CDATA[
-  UAC                         Registrar                          AS
+  UAC                         Registrar                          AS/OP
 ---------------------------------------------------------------------
   |                               |                               |
   | [1] REGISTER                  |                               |
@@ -288,7 +275,7 @@
       <figure anchor="fig-config-ua">
         <name>Example Registration Flow - AS Information Preconfigured</name>
         <artwork><![CDATA[
-  UAC                         Registrar                          AS
+  UAC                         Registrar                          AS/OP
 ---------------------------------------------------------------------
   |                               |                               |
   | [1] The UAC interacts with the AS and obtains tokens, using   |
@@ -387,8 +374,10 @@
           the AS before the currently used access token expires token (<xref target="RFC6749"/>, Section 1.5).
           If the AS does not provide a refresh token, the UAC needs to re-authenticate the user,
           in order to get a new access token, before the currently used access token expires.
-          An OpenID Connect server returns an additional ID-Token containing a SIP URI associated
-          with the user and other user-specific details that will be consumed by the UAC
+          An OP returns an additional ID Token that contains claims about 
+          the authentication of the user by an authorization server. The ID Token can potentially 
+          include other optional claims about the user, e.g. the SIP URI, that will be consumed by 
+          the UAC and later used to register with the registrar.
           </t>
           <t>
           If the UAC receives a 401/407 response with multiple WWW-
@@ -398,7 +387,7 @@
           based on local policy.
           </t>
           <t>
-          NOTE: At the time of writing this specification, detailed procedures for the
+          NOTE: At the time of writing this document, detailed procedures for the
           cases where a UAC receives multiple different authentication schemes had not been
           defined. A future specification might define such procedures.
           </t>
@@ -416,7 +405,7 @@
           TLS when in transit. However, SIP makes have use of intermediary SIP proxies,
           and TLS only guarantees hop-to-hop protection when used to protect SIP signaling.
           Therefore the access token MUST be protected in a way so that only authorized SIP
-          servers will have access to it. SIP endpoints that support this specification MUST
+          servers will have access to it. SIP endpoints that support this document MUST
           use encrypted JSON Web Tokens (JWT) <xref target="RFC7519"/> for encoding and protecting 
           access tokens when they are included in SIP requests, unless some other mechanism 
           is used to guarantee that only authorized SIP endpoints have access to 
@@ -476,7 +465,7 @@
       </section>
       <!-- UAC Behavior -->
     <section anchor="sec.sip.uas">
-        <name>UAS and Registrar Behavior</name>
+        <name>User Agent Server (UAS) and Registrar Behavior</name>
         <t>
         When a UAS or registrar receives a request that fails to contain
         authorization credentials acceptable to it, the UAS/registrar SHOULD challenge the
@@ -571,7 +560,7 @@
   ]]></sourcecode>
         </figure>
       <t>
-  The authz-server parameter contains the HTTPS URI, as defined in 
+  The authz_server parameter contains the HTTPS URI, as defined in 
   <xref target="RFC7230"/>, of the AS. The UAC can discover 
   metadata about the AS using a mechanism like the one defined in <xref target="RFC8414"/>.
       </t>
@@ -589,7 +578,7 @@
   The scope and error parameters are defined in <xref target="RFC6749"/>.
       </t>
       <t>
-  The scope parameter could be used by the registrar/proxy to indicate to the UAC 
+  The scope parameter can be used by the registrar/proxy to indicate to the UAC 
   the minimum scope that must be associated with the access token to be able to get 
   service. As defined in <xref target="RFC6749"/>, the value of the scope parameter 
   is expressed as a list of space-delimited, case-sensitive strings. The strings are 
@@ -620,7 +609,7 @@
       TLS when in transit. However, SIP makes have use of intermediary SIP proxies,
       and TLS only guarantees hop-to-hop protection when used to protect SIP signaling.
       Therefore the access token MUST be protected in a way so that only authorized SIP
-      servers will have access to it. SIP endpoints that support this specification MUST
+      servers will have access to it. SIP endpoints that support this document MUST
       use encrypted JSON Web Tokens (JWT) <xref target="RFC7519"/> for encoding and protecting 
       access tokens when they are included in SIP requests, unless some other mechanism 
       is used to guarantee that only authorized SIP endpoints have access to 
@@ -664,6 +653,14 @@
       important to call these out in privacy disclosures and policies, and
       to make sure that users can be aware of the tradeoffs between
       convenience and privacy when they choose to use SSO.
+      </t>
+      <t>
+      When a registrar chooses to challenge a REGISTER request, if the registrar
+      can provide access to different levels of services, it is RECOMMENDED that
+      the registrar includes a scope in the response in order to indicate the minimum
+      scope needed to register and access basic services. The access token might
+      include an extended scope that gives the user access to more advanced features
+      beyond basic services.
       </t>
       <t>   </t>
     </section>
@@ -730,30 +727,34 @@
   <section anchor="acknowledgments">
       <name>Acknowledgments</name>
       <t>
-   The authors would like to specially thank Paul Kyzivat for his multiple detailed reviews 
-   and suggested text that significantly improved the quality of the document.
+      The authors would like to specially thank Paul Kyzivat for his multiple detailed reviews 
+      and suggested text that significantly improved the quality of the document.
       </t>
       <t>
-   The authors would also like to thank the following for their review and
-   feedback on this document:
+      The authors would also like to thank the following for their review and
+      feedback on this document:
       </t>
       <t>
-   Olle Johansson, Roman Shpount, Dale Worley, and Jorgen Axell.
+      Olle Johansson, Roman Shpount, Dale Worley, and Jorgen Axell.
       </t>
       <t>
-   The authors would also like to thank the following for their review and
-   feedback of the original document that was replaced with this document:
+      The authors would also like to thank the following for their review and
+      feedback of the original document that was replaced with this document:
       </t>
       <t>
-   Andrew Allen, Martin Dolly, Keith Drage, Paul Kyzivat, Jon Peterson,
-   Michael Procter, Roy Radhika, Matt Ryan, Ivo Sedlacek, Roman Shpount,
-   Robert Sparks, Asveren Tolga, Dale Worley, and Yehoshua Gev.
+      Andrew Allen, Martin Dolly, Keith Drage, Paul Kyzivat, Jon Peterson,
+      Michael Procter, Roy Radhika, Matt Ryan, Ivo Sedlacek, Roman Shpount,
+      Robert Sparks, Asveren Tolga, Dale Worley, and Yehoshua Gev.
       </t>
       <t>
-    The authors would also like to specially thank Jean Mahoney for her multiple 
-    reviews, editorial help, and the coversion of the XML source file from v2 to v3.
+      Roman Danyliw, Benjamin Kaduk, Erik Kline, Barry Leiba, Eric Vyncke and
+      Magnus Westerlund provided feedback and suggestions for improvements 
+      as part of the IESG evaluation of the document.
       </t>
-      
+      <t>
+      The authors would also like to specially thank Jean Mahoney for her multiple 
+      reviews, editorial help, and the coversion of the XML source file from v2 to v3.
+      </t>
       <t></t>
       <t></t>
       <t></t>
