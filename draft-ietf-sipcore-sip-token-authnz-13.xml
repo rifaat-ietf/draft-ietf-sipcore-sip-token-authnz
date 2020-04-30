@@ -80,8 +80,8 @@
       <t>
       The Session Initiation Protocol (SIP) <xref target="RFC3261"/> uses the same framework
       as HTTP <xref target="RFC7230"/> to authenticate users: a simple
-      challenge-response authentication mechanism that allows a SIP server to challenge a
-      SIP client request and allows a SIP client to provide authentication
+      challenge-response authentication mechanism that allows a SIP User Agent Server (UAS), proxy or
+      registrar to challenge a SIP User Agent Client (UAC) request and allows the UAC to provide authentication
       information in response to that challenge.
       </t>
       <t>
@@ -91,21 +91,21 @@
       <t>
       The OpenID Connect 1.0 specification <xref target="OPENID"/> defines
       a simple identity layer on top of the OAuth 2.0 protocol, which enables
-      clients to verify the identity of the user based on the authentication
-      performed by a dedicated authorization server, as well as to obtain basic 
-      profile information about the user.
+      OAuth/OpenID clients to verify the identity of the user based on the authentication
+      performed by a dedicated authorization server (AS), referred to as
+      OpenID Provider (OP), as well as to obtain basic profile information about the user.
       </t>
       <t>
-    This document defines the "Bearer" authentication scheme for the
-   Session Initiation Protocol (SIP), and a mechanism by which user
-   authentication and SIP registration authorization is delegated to a
-   third party, using the OAuth 2.0 framework and OpenID Connect Core
-   1.0. This kind of user authentication enables single sign-on,
-   which allows the user to authenticate once and gain access to both SIP
-   and non-SIP services.
+      This document defines the "Bearer" authentication scheme for the
+      Session Initiation Protocol (SIP), and a mechanism by which user
+      authentication and SIP registration authorization is delegated to a
+      third party, using the OAuth 2.0 framework and OpenID Connect Core
+      1.0. This kind of user authentication enables single sign-on,
+      which allows the user to authenticate once and gain access to both SIP
+      and non-SIP services.
       </t>
-            <t>
-      This document also updates <xref target="RFC3261"/>, by defining the User Agent Client (UAC) procedures 
+      <t>
+      This document also updates <xref target="RFC3261"/>, by defining the UAC procedures 
       when a UAC receives a 401/407 response with multiple WWW-Authenticate/Proxy-Authenticate 
       header fields, providing challenges using different authentication schemes 
       for the same realm.
@@ -122,59 +122,46 @@
         </t>
         <t>   </t>
       </section>
-      <section anchor="sip.user.agent.types">
-        <name>SIP User Agent Types</name>
+      <section anchor="section.this">
+        <name>Applicability</name>
         <t>
-      The OAuth 2.0 authorization framework <xref target="RFC6749"/> defines two types of clients, confidential
-      and public, that apply to the SIP UACs.
-        </t>
-        <ul spacing="normal">
-      <li>Confidential User Agent: a SIP UAC that is capable of maintaining
-        the confidentiality of the user credentials and any tokens obtained
-        using these user credentials.
-      </li>
-          <li>Public User Agent: a SIP UAC that is incapable of maintaining the
-        confidentiality of the user credentials and any obtained tokens.
-      </li>
-        </ul>
-        <t>
-        The mechanism defined in this document MUST only be used with  
-        Confidential User Agents, as the UAC is expected to obtain and maintain tokens
-        to be able to access the SIP network.
+        This document covers cases where grants that allow the UAC to obtain an
+        access token from the AS are used. Cases where the UAC is not able to obtain
+        an access token (e.g., in the case of an authorization code grant) are not covered.
         </t>
         <t>   </t>
       </section>
-      <!-- SIP User Agent Types -->
+      <!-- Applicability -->
       
       <section anchor="tokens">
       <name>Token Types and Formats</name>
       
       <t>
       The tokens used in third-party authorization depend on the type of 
-      authorization server (AS).
+      AS.
       </t>
       <t>
-      An OAuth authorization server provides the following tokens to a successfully 
+      An OAuth AS provides the following tokens to a successfully 
       authorized UAC:
       </t>
       <ul spacing="normal">
       <li>
-        Access token: the UAC will use this token to gain access to services by 
-        providing the token to a SIP server.
+      Access token: the UAC will use this token to gain access to services by 
+      providing the token to a SIP server.
       </li>
       <li>
-        Refresh token: the UAC will present this token to the AS
-       to refresh a stale access token.
+      Refresh token: the UAC will present this token to the AS
+      to refresh a stale access token.
       </li>
       </ul>
 
       <t>
-       An OpenID Connect server returns an additional token:
+      An OP returns an additional token:
       </t>
       <ul spacing="normal">
       <li>
-        ID Token: this token contains the SIP URI and other
-       user-specific details that will be consumed by the UAC.
+      ID Token: this token contains a SIP URI associated with the user and other
+      user-specific details that will be consumed by the UAC.
       </li>
       </ul>
 
@@ -183,15 +170,15 @@
       </t>
       <ul spacing="normal">
       <li>Structured Token: a token that consists of a structured object that 
-      contains the claims associated with the token, e.g. JWT as defined in <xref target="RFC7519"/>. 
+      contains the claims associated with the token, e.g., JSON Web Token (JWT) as defined in <xref target="RFC7519"/>. 
       </li>
-      <li>Reference Token: a token that consists of a random string that is used 
+      <li>Reference Token: a token that consists of an opaque string that is used 
       to obtain the details of the token and its associated claims, as defined in <xref target="RFC6749"/>.
       </li>
-        </ul>
+      </ul>
       
       <t>
-      Access Tokens could be represented in one of the above two formats. Refresh Tokens 
+      Access Tokens are represented in one of the above two formats. Refresh Tokens 
       usually are represented in a reference format, as this token is consumed only the AS that 
       issued the token. ID Token is defined as a structured token in the form of a JWT.
       </t>
@@ -205,13 +192,13 @@
         <name>Registration</name>
         <t>
         <xref target="fig-register-flow"/> below shows an example of a SIP registration, where
-        the registrar informs the UAC about the authorization server from which the UAC can
+        the registrar informs the UAC about the AS from which the UAC can
         obtain an access token.
         </t>
         <figure anchor="fig-register-flow">
           <name>Example Registration Flow</name>
         <artwork><![CDATA[
-  UAC                         Registrar                          AS
+  UAC                         Registrar                          AS/OP
 ---------------------------------------------------------------------
   |                               |                               |
   | [1] REGISTER                  |                               |
@@ -230,9 +217,11 @@
   |------------------------------>|                               |
   |                               | [5] HTTP POST /introspect     |
   |                               |     {access_token}            |
+  |                               |       (OPTIONAL)              |
   |                               |------------------------------>|
   |                               |                               |
   |                               | [6] 200 OK {metadata}         |
+  |                               |       (OPTIONAL)              |
   |                               |<------------------------------|
   |                               |                               |
   | [7] 200 OK                    |                               |
@@ -262,11 +251,11 @@
         </t>
         <t>
         The registrar validates the access token. If the access token is a
-        reference token, the registrar MAY perform an introspection <xref target="RFC7662"/>,
-        as in steps [5] and [6], in order to obtain more information
-        about the access token and its scope, per <xref target="RFC7662"/>. 
-        Otherwise, after the registrar validates the token to make sure it was
-        signed by a trusted entity, it inspects its claims and acts upon it.
+        reference token, the registrar MAY perform an introspection
+        <xref target="RFC7662"/>, as in steps [5] and [6], in order to obtain more
+        information about the access token and its scope, per <xref target="RFC7662"/>.
+        Otherwise, after the registrar validates the token, it inspects its
+        claims and acts upon it.
         </t>
         <t>
         In step [7], once the registrar has successfully verified and accepted the 
@@ -284,9 +273,9 @@
         from which to obtain the access token.
         </t>
       <figure anchor="fig-config-ua">
-        <name>Example Registration Flow - Authorization Server Information Preconfigured</name>
+        <name>Example Registration Flow - AS Information Preconfigured</name>
         <artwork><![CDATA[
-  UAC                         Registrar                          AS
+  UAC                         Registrar                          AS/OP
 ---------------------------------------------------------------------
   |                               |                               |
   | [1] The UAC interacts with the AS and obtains tokens, using   |
@@ -298,9 +287,11 @@
   |------------------------------>|                               |
   |                               | [3] HTTP POST /introspect     |
   |                               |     {access_token}            |
+  |                               |       (OPTIONAL)              |
   |                               |------------------------------>|
   |                               |                               |
   |                               | [4] 200 OK {metadata}         |
+  |                               |       (OPTIONAL)              |
   |                               |<------------------------------|
   |                               |                               |
   | [5] 200 OK                    |                               |
@@ -320,11 +311,11 @@
         </t>
         <t>
         The registrar validates the access token. If the access token is a
-        reference token, the registrar MAY perform an introspection,
-        as in steps [3] and [4], in order to obtain more information
-        about the access token and its scope, per <xref target="RFC7662"/>. 
-        Otherwise, after the registrar validates the token to make sure it was
-        signed by a trusted entity, it inspects its claims and acts upon it.
+        reference token, the registrar MAY perform an introspection
+        <xref target="RFC7662"/>, as in steps [4] and [5], in order to obtain more
+        information about the access token and its scope, per <xref target="RFC7662"/>.
+        Otherwise, after the registrar validates the token, it inspects its
+        claims and acts upon it.
         </t>
         <t>
         In step [5], once the registrar has successfully verified and accepted the 
@@ -354,59 +345,72 @@
           it could receive either a 401 (Unauthorized) response with a WWW-Authenticate header field or a 407 (Proxy 
           Authentication Required) response with a Proxy-Authenticate header field.
           If the WWW-Authenticate or Proxy-Authenticate header field indicates "Bearer" scheme authentication 
-          and contains an address to an authorization server, the UAC contacts the 
-          authorization server in order to obtain tokens, and includes the requested 
+          and contains an address to an AS, the UAC contacts the 
+          AS in order to obtain tokens, and includes the requested 
           scopes, based on a local configuration (<xref target="fig-register-flow"/>). 
+          The UAC MUST check the AS URL received in the 401/407 response
+          against a list of trusted ASs configured on the UAC, in order
+          to prevent several classes of possible vulnerabilities when a client blindly
+          attempt to use any provided authorization.
           </t>
           <t>
-            The detailed OAuth2 procedure to authenticate the user and obtain
-            these tokens is out of scope of this document. 
-            The address of the authorization server might already be known to the UAC via configuration. 
-            In which case, the UAC can contact the authorization server for tokens 
-            before it sends a SIP request (<xref target="fig-config-ua"/>). 
-            Procedures for native applications are defined in <xref target="RFC8252"/>.
-             When using the mechanism defined
-            in <xref target="RFC8252"/> the user of the UAC will be directed to interact
-            with the authorization server using a web browser, allowing the authorization server
-            to prompt the user for multi-factor authentication, to redirect the user to
-            third-party identity providers, and to enable the use of single sign-on sessions.
+          The detailed OAuth2 procedure to authenticate the user and obtain
+          these tokens is out of scope of this document. 
+          The address of the AS might already be known to the UAC via configuration. 
+          In such cases, the UAC can contact the AS for tokens 
+          before it sends a SIP request (<xref target="fig-config-ua"/>). 
+          Procedures for native applications are defined in <xref target="RFC8252"/>.
+          When using the mechanism defined
+          in <xref target="RFC8252"/> the user of the UAC will be directed to interact
+          with the AS using a web browser, allowing the AS
+          to prompt the user for multi-factor authentication, to redirect the user to
+          third-party identity providers, and to enable the use of single sign-on sessions.
           </t>
           <t>
-          The tokens returned to 
-          the UAC depend on the type of authorization server (AS): an OAuth AS provides an 
-          access token and refresh token <xref target="RFC6749"/>. The UAC provides the access token to the
-          SIP servers to authorize UAC's access to the service. The UAC uses the refresh token 
-          only with the AS to get a new access token and refresh token before 
-          the expiry of the current access token (see <xref target="RFC6749"/>, section 1.5 Refresh Token for details). 
-          An OpenID Connect server returns 
-          an additional ID-Token containing the SIP URI and other user-specific 
-          details that will be consumed by the UAC.
+          The tokens returned to the UAC depend on the type of AS: an OAuth AS provides an 
+          access token and optionally a refresh token <xref target="RFC6749"/>. The refresh
+          token is only used between the UAC and the AS. If the AS provides a refresh token
+          to the UAC, the UAC uses it to to request a new access token and refresh token from
+          the AS before the currently used access token expires token (<xref target="RFC6749"/>, Section 1.5).
+          If the AS does not provide a refresh token, the UAC needs to re-authenticate the user,
+          in order to get a new access token, before the currently used access token expires.
+          An OP returns an additional ID Token that contains claims about 
+          the authentication of the user by an authorization server. The ID Token can potentially 
+          include other optional claims about the user, e.g. the SIP URI, that will be consumed by 
+          the UAC and later used to register with the registrar.
           </t>
           <t>
-        If the UAC receives a 401/407 response with multiple WWW-Authenticate/Proxy-Authenticate 
-        header fields, providing challenges using different authentication schemes 
-        for the same realm, the UAC selects one or more of the provided schemes 
-        (based on local policy) and provides credentials for those schemes.
+          If the UAC receives a 401/407 response with multiple WWW-
+          Authenticate/Proxy-Authenticate header fields, providing challenges
+          using different authentication schemes for the same realm, the UAC
+          provides credentials for one of the schemes that it supports,
+          based on local policy.
           </t>
-        <t>
-        NOTE: The address of the Authorization Server might be known to the	 		
-        UAC e.g., using means of configuration, in which case the UAC can	 		
-        contact the Authorization Server in order to obtain the access token	 		
-        before it sends SIP request without credentials.
-     </t>
+          <t>
+          NOTE: At the time of writing this document, detailed procedures for the
+          cases where a UAC receives multiple different authentication schemes had not been
+          defined. A future specification might define such procedures.
+          </t>
+          <t>
+          NOTE: The address of the AS might be known to the	 		
+          UAC e.g., using means of configuration, in which case the UAC can	 		
+          contact the AS in order to obtain the access token	 		
+          before it sends SIP request without credentials.
+          </t>
         </section>
         <section anchor="sec.sip.uac.protect">
           <name>Protecting the Access Token</name>
           <t>
           <xref target="RFC6749"/> mandates that access tokens are protected with 
-          TLS when in transit. However, TLS only guarantees hop-to-hop protection 
-          when used to protect SIP signaling. Therefore the access token MUST be 
-          protected in a way so that only authorized SIP servers will have access 
-          to it. Endpoints that support this specification MUST support encrypted 
-          JSON Web Tokens (JWT) <xref target="RFC7519"/> for encoding and protecting 
+          TLS when in transit. However, SIP makes have use of intermediary SIP proxies,
+          and TLS only guarantees hop-to-hop protection when used to protect SIP signaling.
+          Therefore the access token MUST be protected in a way so that only authorized SIP
+          servers will have access to it. SIP endpoints that support this document MUST
+          use encrypted JSON Web Tokens (JWT) <xref target="RFC7519"/> for encoding and protecting 
           access tokens when they are included in SIP requests, unless some other mechanism 
           is used to guarantee that only authorized SIP endpoints have access to 
-          the access token.
+          the access token. TLS can still be used for protecting traffic between
+          SIP endpoints and the AS.
           </t>
           <t>   </t>
         </section>
@@ -426,9 +430,9 @@
         able to successfully retry the request using non-Bearer credentials.
           </t>
           <t>
-        Based on local policy, the UAC MAY include an access token that has
-        been used for another binding associated with the same Address Of Record (AOR) in the
-        request.
+          Typically, a UAC will obtain a new access token for each new binding, However, based on local policy,
+          a UAC MAY include an access token that has been used for another binding associated with the same
+          Address Of Record (AOR) in the request.
           </t>
           <t>
         If the access token included in a REGISTER request is not accepted,
@@ -445,10 +449,11 @@
           </t>
           <t>
           When the UAC sends a request, it MUST include an Authorization header field 
-          with a Bearer scheme, carrying a valid access token in the request, as specified
-          in <xref target="RFC6750"/>. Based on local policy, the UAC MAY include 
-          an access token that has been used for another dialog, or for another 
-          stand-alone request, if the target of the new request is the same.
+          with a Bearer scheme, carrying a valid access token obtained from the AS indicated
+          in the challenge, in the request, as specified in <xref target="RFC6750"/>.
+          Based on local policy, the UAC MAY include an access token that has been used
+          for another dialog, or for another stand-alone request, if the target of the
+          new request is the same.
           </t>
           <t>
           If the access token included in a request is not accepted, and the UAC receives 
@@ -460,26 +465,27 @@
       </section>
       <!-- UAC Behavior -->
     <section anchor="sec.sip.uas">
-        <name>UAS and Registrar Behavior</name>
+        <name>User Agent Server (UAS) and Registrar Behavior</name>
         <t>
-        When a UAS or Registrar receives a request that fails to contain
-        authorization credentials acceptable to it, it SHOULD challenge the
-        request by sending a 401 (Unauthorized) response. To indicate that
-        it is willing to accept an access token as a credential, the
-        UAS/Registrar MUST include a Proxy-Authentication header field in the
-        response that indicates "Bearer" scheme and includes an address of an
-        authorization server from which the originator can obtain an access token.
+        When a UAS or registrar receives a request that fails to contain
+        authorization credentials acceptable to it, the UAS/registrar SHOULD challenge the
+        request by sending a 401 (Unauthorized) response. If the UAS/registrar
+        chooses to challenge the request, and is willing to accept an access token
+        as a credential, it MUST include a WWW-Authenticate header
+        field in the response that indicates "Bearer" scheme and includes an AS address, 
+        encoded as an https URI <xref target="RFC7230"/>, from which the UAC can obtain
+        an access token.
         </t>
         <t>
-        When a UAS/Registrar receives a SIP request that contains an Authorization 
-        header field with an access token, the UAS/Registrar MUST validate the access 
+        When a UAS or registrar receives a SIP request that contains an Authorization 
+        header field with an access token, the UAS/registrar MUST validate the access 
         token, using the procedures associated with the type of access token (Structured 
-        or Reference) used, e.g. <xref target="RFC7519"/>.
-        If the token provided is an expired access token, then the UAS MUST reply with 
-        401 Unauthorized, as defined in section 3 of <xref target="RFC6750"/>.
-        If the validation is successful, the UAS/Registrar can continue to process 
-        the request using normal SIP procedures. If the validation fails, the UAS/Registrar 
-        MUST reject the request.
+        or Reference) used, e.g., <xref target="RFC7519"/>.
+        If the token provided is an expired access token, then the UAS/registrar MUST reply with 
+        a 401 (Unauthorized) response, as defined in section 3 of <xref target="RFC6750"/>.
+        If the validation is successful, the UAS/registrar can continue to process 
+        the request using normal SIP procedures. If the validation fails, the UAS/registrar 
+        MUST reply with 401 (Unauthorized) response.
         </t>
         <t>   </t>
       </section>
@@ -490,11 +496,11 @@
         When a proxy receives a request that fails to contain
         authorization credentials acceptable to it, it SHOULD challenge the
         request by sending a 407 (Proxy Authentication Required) response.
-        To indicate that it is willing to accept an access token as a
-        credential, the proxy MUST include a Proxy-Authentication
-        header field in the response that indicates "Bearer" scheme and
-        includes an address to an authorization server from which the
-        originator can obtain an access token.         
+        If the proxy chooses to challenge the request, and is willing to accept an access token
+        as a credential, it MUST include a Proxy-Authenticate
+        header field in the response that indicates "Bearer" scheme and includes an AS address, 
+        encoded as an https URI <xref target="RFC7230"/>, from which the UAC can obtain
+        an access token.
         </t>
         <t>
         When a proxy wishes to authenticate a received request, it MUST
@@ -519,11 +525,11 @@
     are based on local policy agreed between the AS and the registrar.
       </t>
       <t>
-    If an access token is encoded as a JWT, it might contain a list of claims 
-    <xref target="RFC7519"/>, some registered and some application-specific. The 
-    REGISTRAR can grant access to services based on such claims,  
+    If an access token is encoded as a JWT, it will contain a list of claims 
+    <xref target="RFC7519"/>, including both registered and application-specific claimes. The 
+    registrar can grant access to services based on such claims,  
     some other mechanism, or a combination of claims and some other mechanism.
-    If an access token is a reference token, the REGISTRAR will grant access 
+    If an access token is a reference token, the registrar will grant access 
     based on some other mechanism. Examples of such other mechanisms are 
     introspection <xref target="RFC7662"/> and user profile lookups.
       </t>
@@ -539,21 +545,23 @@
       <figure>
         <name>Bearer Scheme Syntax</name>
       <sourcecode type="abnf"><![CDATA[
-    challenge  =/  ("Bearer" LWS bearer-cln *(COMMA bearer-cln))
-    bearer-cln = realm / scope / authz-server / error / 
-                 auth-param
-    authz-server = "authz_server" EQUAL authz-server-value
-    authz-server-value = https-URI
-    realm = <defined in RFC3261>
-    auth-param = <defined in RFC3261>
-    scope = <defined in RFC6749>
-    error = <defined in RFC6749>
-    https-URI = <defined in RFC7230>
+   challenge  =/  ("Bearer" LWS bearer-cln *(COMMA bearer-cln))
+   bearer-cln = realm / scope-param / authz-server-param / error-param
+                / auth-param
+   realm = <defined in RFC3261>
+   scope-param = "scope" EQUAL DQUOTE scope DQUTE
+   scope = <defined in RFC6749>
+   authz-server-param = "authz_server" EQUAL DQUOTE authz-server DQUOTE
+   authz-server = https-URI
+   https-URI = <defined in RFC7230>
+   error-param = "error" EQUAL DQUOTE error DQUOTE
+   error = <defined in RFC6749>
+   auth-param = <defined in RFC3261>
   ]]></sourcecode>
         </figure>
       <t>
-  The authz-server parameter contains the HTTPS URI, as defined in 
-  <xref target="RFC7230"/>, of the authorization server. The UAC can discover 
+  The authz_server parameter contains the HTTPS URI, as defined in 
+  <xref target="RFC7230"/>, of the AS. The UAC can discover 
   metadata about the AS using a mechanism like the one defined in <xref target="RFC8414"/>.
       </t>
       <t>
@@ -570,11 +578,11 @@
   The scope and error parameters are defined in <xref target="RFC6749"/>.
       </t>
       <t>
-  The scope parameter could be used by the registrar/proxy to indicate to the UAC 
+  The scope parameter can be used by the registrar/proxy to indicate to the UAC 
   the minimum scope that must be associated with the access token to be able to get 
   service. As defined in <xref target="RFC6749"/>, the value of the scope parameter 
   is expressed as a list of space-delimited, case-sensitive strings. The strings are 
-  defined by the authorization server. The values of the scope parameter are out of 
+  defined by the AS. The values of the scope parameter are out of 
   scope of this document. The UAC will use the scope provided by the registrar to 
   contact the AS and obtain a proper token with the requested scope.
       </t>
@@ -597,49 +605,154 @@
       document.
       </t>
       <t>
-      <xref target="RFC6749"/> mandates that access tokens are protected with TLS. 
-      However, TLS only guarantees hop-to-hop protection when used to protect SIP 
-      signaling. Therefore the access token MUST be protected in a way so that 
-      only authorized SIP endpoints will have access to it. Endpoints that support 
-      this specification MUST support encrypted JSON Web Tokens (JWT) <xref target="RFC7519"/> 
-      for encoding and protecting access tokens when included in SIP requests, unless 
-      some other mechanism is used to guarantee that only authorized SIP endpoints
-      have access to the access token.
+      <xref target="RFC6749"/> mandates that access tokens are protected with 
+      TLS when in transit. However, SIP makes have use of intermediary SIP proxies,
+      and TLS only guarantees hop-to-hop protection when used to protect SIP signaling.
+      Therefore the access token MUST be protected in a way so that only authorized SIP
+      servers will have access to it. SIP endpoints that support this document MUST
+      use encrypted JSON Web Tokens (JWT) <xref target="RFC7519"/> for encoding and protecting 
+      access tokens when they are included in SIP requests, unless some other mechanism 
+      is used to guarantee that only authorized SIP endpoints have access to 
+      the access token. TLS can still be used for protecting traffic between
+      SIP endpoints and the AS.
+      </t>
+      <t>
+      Single Sign-On (SSO) enables the user to use one set of credentials to
+      authenticate once and gain access to multiple SIP and non-SIP services
+      using access token(s). If the SSO login is compromised, that single
+      point of compromise has a much broader effect than is the case without
+      SSO. Further, an attacker can often use a compromised account to set
+      up Single Sign-On for other services that the victim has not
+      established an account with, and sometimes can even switch a dedicated
+      account into Single-Sign-On mode, creating a still broader attack.
+      </t>
+      <t>
+      Because of that, it is critical to make sure that extra security
+      measures be taken to safeguard credentials used for Single Sign-On.
+      Examples of such measures include long passphrase instead of a
+      password, enabling multi-factor factor authentication, and the use of
+      embedded browser when possible, as defined in <xref target="RFC8252"/>.
+      </t>
+      <t>
+      Although this is out of scope for this document, it is important to
+      carefully consider the claims provided in the tokens used to access
+      these services to make sure of the privacy of the user accessing these
+      services. As mentioned above, this document calls for encrypting JWT
+      representing the access token.
+      </t>
+      <t>
+      It is important that both parties participating in SSO provide
+      mechanisms for users to sever the SSO relationship, so that it is
+      possible without undue difficulty to mitigate a compromise that has
+      already happened.
+      </t>
+      <t>
+      The operator of a Single-Sign-On authentication system has access to
+      private information about sites and services that their users log
+      into, and even, to some extent, about their usage patterns.  It's
+      important to call these out in privacy disclosures and policies, and
+      to make sure that users can be aware of the tradeoffs between
+      convenience and privacy when they choose to use SSO.
+      </t>
+      <t>
+      When a registrar chooses to challenge a REGISTER request, if the registrar
+      can provide access to different levels of services, it is RECOMMENDED that
+      the registrar includes a scope in the response in order to indicate the minimum
+      scope needed to register and access basic services. The access token might
+      include an extended scope that gives the user access to more advanced features
+      beyond basic services.
       </t>
       <t>   </t>
     </section>
     <!-- Security Considerations -->
 
+  <section anchor="iana.considerations">
+      <name>IANA Considerations</name>
 
+      <section anchor="iana.considerations.proxy-authenticate.param">
+        <name>New Proxy-Authenticate header field parameters</name>
+        <t>
+        This section defines new SIP header field parameters in the "Header Field
+        Parameters and Parameter Values" subregistry of the "Session
+        Initiation Protocol (SIP) Parameters" registry: https://www.iana.org/assignments/sip-parameters
+        </t>
 
+        <figure align="center"><artwork>
+        <![CDATA[
+  Header Field:  Proxy-Authenticate
+
+  Parameter Name:  authz_server
+  Predefined Values:  No
+  Reference:  RFC XXXX
+
+  Parameter Name:  error
+  Predefined Values:  No
+  Reference:  RFC XXXX
+
+  Parameter Name:  scope
+  Predefined Values:  No
+  Reference:  RFC XXXX
+]]></artwork></figure>
+    </section>
+    <section anchor="iana.considerations.www-authenticate.param">
+        <name>New WWW-Authenticate header field parameters</name>
+        <t>
+        This section defines new SIP header field parameters in the "Header Field
+        Parameters and Parameter Values" subregistry of the "Session
+        Initiation Protocol (SIP) Parameters" registry: https://www.iana.org/assignments/sip-parameters
+        </t>
+
+        <figure align="center"><artwork>
+        <![CDATA[
+  Header Field:  WWW-Authenticate
+
+  Parameter Name:  authz_server
+  Predefined Values:  No
+  Reference:  RFC XXXX
+
+  Parameter Name:  error
+  Predefined Values:  No
+  Reference:  RFC XXXX
+
+  Parameter Name:  scope
+  Predefined Values:  No
+  Reference:  RFC XXXX
+]]></artwork></figure>
+    </section>
+  </section>
+  <!-- IANA Considerations -->
 
   <section anchor="acknowledgments">
       <name>Acknowledgments</name>
       <t>
-   The authors would like to specially thank Paul Kyzivat for his multiple detailed reviews 
-   and suggested text that significantly improved the quality of the document.
+      The authors would like to specially thank Paul Kyzivat for his multiple detailed reviews 
+      and suggested text that significantly improved the quality of the document.
       </t>
       <t>
-   The authors would also like to thank the following for their review and
-   feedback on this document:
+      The authors would also like to thank the following for their review and
+      feedback on this document:
       </t>
       <t>
-   Olle Johansson, Roman Shpount, Dale Worley, and Jorgen Axell.
+      Olle Johansson, Roman Shpount, Dale Worley, and Jorgen Axell.
       </t>
       <t>
-   The authors would also like to thank the following for their review and
-   feedback of the original document that was replaced with this document:
+      The authors would also like to thank the following for their review and
+      feedback of the original document that was replaced with this document:
       </t>
       <t>
-   Andrew Allen, Martin Dolly, Keith Drage, Paul Kyzivat, Jon Peterson,
-   Michael Procter, Roy Radhika, Matt Ryan, Ivo Sedlacek, Roman Shpount,
-   Robert Sparks, Asveren Tolga, Dale Worley, and Yehoshua Gev.
+      Andrew Allen, Martin Dolly, Keith Drage, Paul Kyzivat, Jon Peterson,
+      Michael Procter, Roy Radhika, Matt Ryan, Ivo Sedlacek, Roman Shpount,
+      Robert Sparks, Asveren Tolga, Dale Worley, and Yehoshua Gev.
       </t>
       <t>
-    The authors would also like to specially thank Jean Mahoney for her multiple 
-    reviews, editorial help, and the coversion of the XML source file from v2 to v3.
+      Roman Danyliw, Benjamin Kaduk, Erik Kline, Barry Leiba, Eric Vyncke and
+      Magnus Westerlund provided feedback and suggestions for improvements 
+      as part of the IESG evaluation of the document.
       </t>
-      
+      <t>
+      The authors would also like to specially thank Jean Mahoney for her multiple 
+      reviews, editorial help, and the coversion of the XML source file from v2 to v3.
+      </t>
       <t></t>
       <t></t>
       <t></t>
@@ -669,11 +782,14 @@
       <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7662.xml"/>
       <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7519.xml"/>
       <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.6750.xml"/>
-      <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8252.xml"/>
       <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7230.xml"/>
-      <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8414.xml"/>
       <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8174.xml"/>
       <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.5234.xml"/>
+    </references>
+        <references>
+      <name>Informative References</name>
+      <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8252.xml"/>
+      <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8414.xml"/>
     </references>
   </back>
 </rfc>
