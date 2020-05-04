@@ -370,8 +370,8 @@
           The tokens returned to the UAC depend on the type of AS: an OAuth AS provides an 
           access token and optionally a refresh token <xref target="RFC6749"/>. The refresh
           token is only used between the UAC and the AS. If the AS provides a refresh token
-          to the UAC, the UAC uses it to to request a new access token and refresh token from
-          the AS before the currently used access token expires token (<xref target="RFC6749"/>, Section 1.5).
+          to the UAC, the UAC uses it to request a new access token and refresh token from
+          the AS before the currently used access token expires (<xref target="RFC6749"/>, Section 1.5).
           If the AS does not provide a refresh token, the UAC needs to re-authenticate the user,
           in order to get a new access token, before the currently used access token expires.
           An OP returns an additional ID Token that contains claims about 
@@ -402,7 +402,7 @@
           <name>Protecting the Access Token</name>
           <t>
           <xref target="RFC6749"/> mandates that access tokens are protected with 
-          TLS when in transit. However, SIP makes have use of intermediary SIP proxies,
+          TLS when in transit. However, SIP makes use of intermediary SIP proxies,
           and TLS only guarantees hop-to-hop protection when used to protect SIP signaling.
           Therefore the access token MUST be protected in a way so that only authorized SIP
           servers will have access to it. SIP endpoints that support this document MUST
@@ -410,7 +410,7 @@
           access tokens when they are included in SIP requests, unless some other mechanism 
           is used to guarantee that only authorized SIP endpoints have access to 
           the access token. TLS can still be used for protecting traffic between
-          SIP endpoints and the AS.
+          SIP endpoints and the AS, as defined in <xref target="RFC6749"/>.
           </t>
           <t>   </t>
         </section>
@@ -614,7 +614,7 @@ auth-param = <defined in RFC3261>
       access tokens when they are included in SIP requests, unless some other mechanism 
       is used to guarantee that only authorized SIP endpoints have access to 
       the access token. TLS can still be used for protecting traffic between
-      SIP endpoints and the AS.
+      SIP endpoints and the AS, as defined in <xref target="RFC6749"/>.
       </t>
       <t>
       Single Sign-On (SSO) enables the user to use one set of credentials to
