@@ -660,7 +660,7 @@ auth-param = <defined in RFC3261>
       the registrar includes a scope in the response in order to indicate the minimum
       scope needed to register and access basic services. The access token might
       include an extended scope that gives the user access to more advanced features
-      beyond basic services. In SIP, the AS administrator will typicall decide what level
+      beyond basic services. In SIP, the AS administrator will typically decide what level
       of access is provided for a given user.
       </t>
       <t>
@@ -754,7 +754,8 @@ auth-param = <defined in RFC3261>
       <t>
       Roman Danyliw, Benjamin Kaduk, Erik Kline, Barry Leiba, Eric Vyncke and
       Magnus Westerlund provided feedback and suggestions for improvements 
-      as part of the IESG evaluation of the document.
+      as part of the IESG evaluation of the document. Special thanks to Benjamin
+      Kaduk for his detailed and comprehensive reviews and comments.
       </t>
       <t>
       The authors would also like to specially thank Jean Mahoney for her multiple 
