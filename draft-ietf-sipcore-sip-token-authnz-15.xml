@@ -351,7 +351,7 @@
           The UAC MUST check the AS URL received in the 401/407 response
           against a list of trusted ASs configured on the UAC, in order
           to prevent several classes of possible vulnerabilities when a client blindly
-          attempt to use any provided authorization.
+          attempts to use any provided AS.
           </t>
           <t>
           The detailed OAuth2 procedure to authenticate the user and obtain
@@ -370,7 +370,7 @@
           The tokens returned to the UAC depend on the type of AS: an OAuth AS provides an 
           access token and optionally a refresh token <xref target="RFC6749"/>. The refresh
           token is only used between the UAC and the AS. If the AS provides a refresh token
-          to the UAC, the UAC uses it to request a new access token and refresh token from
+          to the UAC, the UAC uses it to request a new access token from
           the AS before the currently used access token expires (<xref target="RFC6749"/>, Section 1.5).
           If the AS does not provide a refresh token, the UAC needs to re-authenticate the user,
           in order to get a new access token, before the currently used access token expires.
@@ -526,7 +526,7 @@
       </t>
       <t>
     If an access token is encoded as a JWT, it will contain a list of claims 
-    <xref target="RFC7519"/>, including both registered and application-specific claimes. The 
+    <xref target="RFC7519"/>, including both registered and application-specific claims. The 
     registrar can grant access to services based on such claims,  
     some other mechanism, or a combination of claims and some other mechanism.
     If an access token is a reference token, the registrar will grant access 
@@ -631,7 +631,7 @@ auth-param = <defined in RFC3261>
       measures be taken to safeguard credentials used for Single Sign-On.
       Examples of such measures include long passphrase instead of a
       password, enabling multi-factor factor authentication, and the use of
-      embedded browser when possible, as defined in <xref target="RFC8252"/>.
+      the native platform browser when possible, as defined in <xref target="RFC8252"/>.
       </t>
       <t>
       Although this is out of scope for this document, it is important to
@@ -660,7 +660,14 @@ auth-param = <defined in RFC3261>
       the registrar includes a scope in the response in order to indicate the minimum
       scope needed to register and access basic services. The access token might
       include an extended scope that gives the user access to more advanced features
-      beyond basic services.
+      beyond basic services. In SIP, the AS administrator will typicall decide what level
+      of access is provided for a given user.
+      </t>
+      <t>
+      The UAC MUST check the AS URL received in the 401/407 response
+      against a list of trusted ASs configured on the UAC, in order
+      to prevent several classes of possible vulnerabilities when a client blindly
+      attempts to use any provided AS.
       </t>
       <t>   </t>
     </section>
